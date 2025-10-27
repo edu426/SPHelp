@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import './MainHeader.css'
-
+import { SignInButton } from '@clerk/clerk-react';
 function MainHeader() {
     return (
         <div>
@@ -9,7 +9,7 @@ function MainHeader() {
                 <div className="nav-right">
                     <a className="nav-link">Ajuda</a>
                     <a className="btn btn-outline">Entrar</a>
-                    <a className="btn btn-primary">Criar Conta</a>
+                    <SignInButton/>
                 </div>
             </nav>
 
