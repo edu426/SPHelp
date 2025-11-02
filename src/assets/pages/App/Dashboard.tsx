@@ -1,13 +1,38 @@
-
+import { useUser } from "@clerk/clerk-react";
+import { useEffect } from "react";
 import './Dashboard.css'
 
 function Dashboard() {
+    const { user } = useUser();
+
+
+    useEffect(() => {
+        // Verifica se o utilizador está autenticado
+        if (user) {
+        fetch("http://localhost:3000/api/sync", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+            clerkId: user.id,
+            }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+            console.log("Sincronizado com sucesso:", data);
+            })
+            .catch((err) => {
+            console.error("Erro ao sincronizar:", err);
+            });
+        }
+    }, [user]); 
     return (
         <div>
 
             <section className="hero">
                 <div className="hero-content">
-                    <h1>Bem vindo nome</h1>
+                    <h1>Bem vindo nome {user?.firstName}</h1>
                 </div>
             </section>
 
