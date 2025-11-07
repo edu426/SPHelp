@@ -1,0 +1,15 @@
+Alunos
+    > Página Adicionar Alunos
+    > Mostrar Alunos na Dashboard
+    > Editar e Apagar Alunos
+    > Notas sobre o Aluno
+    > Atualizar a Tabela para mostrar Foto dos Alunos
+
+Ferramentas
+    > Exportar Excel
+    > Guia dos Problema (se for algo simples )
+    > Tabela de Presença (Criar Nova tabela na DB com [Data_da_Falta;Id_Aluno;Id;Tipo_Falta;Notas])
+
+Layouts
+    > Melhorar Layouts e Design geral
+    > Logo, Nome e Lema novo
