@@ -1,133 +1,130 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 
-// Sample student data for testing
-const sampleStudents = [
-    {
-        id: 1,
-        nome: 'João Silva',
-        email: 'joao@example.com',
-        turma: '10A',
-        idade: 16,
-        telefone: '912345678'
-    },
-    {
-        id: 2,
-        nome: 'Maria Santos',
-        email: 'maria@example.com',
-        turma: '10B',
-        idade: 15,
-        telefone: '923456789'
-    },
-    {
-        id: 3,
-        nome: 'Pedro Costa',
-        email: 'pedro@example.com',
-        turma: '11A',
-        idade: 17,
-        telefone: '934567890'
-    },
-    {
-        id: 4,
-        nome: 'Ana Oliveira',
-        email: 'ana@example.com',
-        turma: '10A',
-        idade: 16,
-        telefone: '945678901'
-    },
-    {
-        id: 5,
-        nome: 'Carlos Ferreira',
-        email: 'carlos@example.com',
-        turma: '11B',
-        idade: 18,
-        telefone: '956789012'
-    }
-];
+interface Student {
+    id: string;
+    nome: string;
+    email: string;
+    turma: string;
+    notas: string;
+    professorId: string;
+}
 
 export default function ExcelTest() {
-    const [students, setStudents] = useState(sampleStudents);
+    const [students, setStudents] = useState<Student[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-    // Export all students to Excel
+    // Fetch alunos do backend
+    useEffect(() => {
+        const fetchStudents = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('http://localhost:3000/api/alunos');
+                if (!response.ok) throw new Error('Failed to fetch students');
+                const data = await response.json();
+                setStudents(data);
+            } catch (err: any) {
+                setError('Could not connect to backend. Make sure it is running on port 3000.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStudents();
+    }, []);
+
+    // Exportar todos os alunos para Excel
     const exportToExcel = () => {
         try {
-            // Create worksheet from student data
             const ws = XLSX.utils.json_to_sheet(students);
-
-            // Create workbook and add the worksheet
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Alunos');
-
-            // Generate filename with current date
             const date = new Date().toISOString().split('T')[0];
             const filename = `Alunos_${date}.xlsx`;
-
-            // Save the file
             XLSX.writeFile(wb, filename);
-
-            setMessage(`Excel file "${filename}" downloaded successfully!`);
+            setMessage(`✅ Excel file "${filename}" downloaded successfully!`);
             setTimeout(() => setMessage(''), 3000);
         } catch (error: any) {
             setMessage(`Error: ${error.message}`);
         }
     };
 
-    // Export with custom columns
-    const exportCustomColumns = () => {
+    // Exportar com colunas personalizadas (ainda não implementado/exemplo)
+    /*
+    const exportCustomColumns = () => { 
         try {
-            // Select only specific fields
             const customData = students.map(student => ({
                 'ID': student.id,
                 'Nome': student.nome,
                 'Email': student.email,
-                'Turma': student.turma
+                'Turma': student.turma,
+                'Notas': student.notas,
             }));
-
             const ws = XLSX.utils.json_to_sheet(customData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Alunos_Resumo');
-
             XLSX.writeFile(wb, 'Alunos_Resumo.xlsx');
-
-            setMessage('Custom Excel file downloaded!');
+            setMessage('✅ Custom Excel file downloaded!');
             setTimeout(() => setMessage(''), 3000);
         } catch (error: any) {
             setMessage(`Error: ${error.message}`);
         }
     };
-
-    // Add a new test student
-    const addTestStudent = () => {
-        const newId = Math.max(...students.map(s => s.id)) + 1;
-        const newStudent = {
-            id: newId,
-            nome: `Test Student ${newId}`,
-            email: `test${newId}@example.com`,
-            turma: '12A',
-            idade: 18,
-            telefone: '999999999'
-        };
-        setStudents([...students, newStudent]);
-        setMessage(`Added ${newStudent.nome}`);
-        setTimeout(() => setMessage(''), 2000);
+*/
+    // Refresh data from backend
+    const refreshData = async () => {
+        setError('');
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:3000/api/alunos');
+            if (!response.ok) throw new Error('Failed to fetch');
+            const data = await response.json();
+            setStudents(data);
+            setMessage('Dados atualizados!');
+            setTimeout(() => setMessage(''), 2000);
+        } catch {
+            setError('Erro ao ligar ao backend.');
+        } finally {
+            setLoading(false);
+        }
     };
+
+    // Loading state
+    if (loading) {
+        return <div style={{ padding: '2rem', fontSize: '1.2rem', color: '#555' }}>⏳ Loading students from database...</div>;
+    }
 
     return (
         <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
             <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#333' }}>
-                Excel Export Test
+                Excel Export — Real DB Data
             </h1>
+
+            {/* Error message */}
+            {error && (
+                <div style={{
+                    padding: '1rem',
+                    marginBottom: '1rem',
+                    backgroundColor: '#fee',
+                    border: '1px solid #faa',
+                    borderRadius: '4px',
+                    color: '#c00'
+                }}>
+                    {error}
+                </div>
+            )}
 
             {/* Status message */}
             {message && (
                 <div style={{
                     padding: '1rem',
                     marginBottom: '1rem',
-                    backgroundColor: message.includes('❌') ? '#fee' : '#efe',
-                    border: `1px solid ${message.includes('❌') ? '#faa' : '#afa'}`,
+                    backgroundColor: '#efe',
+                    border: '1px solid #afa',
                     borderRadius: '4px',
-                    color: message.includes('❌') ? '#c00' : '#060'
+                    color: '#060'
                 }}>
                     {message}
                 </div>
@@ -154,6 +151,9 @@ export default function ExcelTest() {
                     Export All Data
                 </button>
 
+
+                {/* Exportar com colunas personalizadas (ainda não implementado/exemplo) */}
+                {/*
                 <button
                     onClick={exportCustomColumns}
                     style={{
@@ -172,9 +172,9 @@ export default function ExcelTest() {
                 >
                     Export Custom (ID, Nome, Email, Turma)
                 </button>
-
+*/}
                 <button
-                    onClick={addTestStudent}
+                    onClick={refreshData}
                     style={{
                         padding: '0.75rem 1.5rem',
                         backgroundColor: '#8b5cf6',
@@ -189,13 +189,13 @@ export default function ExcelTest() {
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#7c3aed'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#8b5cf6'}
                 >
-                    Add Test Student
+                    Atualizar dados
                 </button>
             </div>
 
             {/* Student table */}
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#555' }}>
-                Current Students ({students.length})
+                Students from DB ({students.length})
             </h2>
 
             <div style={{ overflowX: 'auto' }}>
@@ -211,8 +211,8 @@ export default function ExcelTest() {
                             <th style={headerStyle}>Nome</th>
                             <th style={headerStyle}>Email</th>
                             <th style={headerStyle}>Turma</th>
-                            <th style={headerStyle}>Idade</th>
-                            <th style={headerStyle}>Telefone</th>
+                            <th style={headerStyle}>Notas</th>
+                            <th style={headerStyle}>Professor ID</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -227,8 +227,8 @@ export default function ExcelTest() {
                                 <td style={cellStyle}>{student.nome}</td>
                                 <td style={cellStyle}>{student.email}</td>
                                 <td style={cellStyle}>{student.turma}</td>
-                                <td style={cellStyle}>{student.idade}</td>
-                                <td style={cellStyle}>{student.telefone}</td>
+                                <td style={cellStyle}>{student.notas}</td>
+                                <td style={cellStyle}>{student.professorId}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -245,9 +245,9 @@ export default function ExcelTest() {
             }}>
                 <h3 style={{ marginTop: 0, color: '#0369a1' }}>💡 How to use:</h3>
                 <ul style={{ color: '#0c4a6e', lineHeight: '1.6' }}>
-                    <li><strong>Export All Data:</strong> Downloads an Excel file with all student information</li>
-                    <li><strong>Export Custom:</strong> Downloads only selected columns (ID, Nome, Email, Turma)</li>
-                    <li><strong>Add Test Student:</strong> Adds a new test student to the table</li>
+                    <li><strong>Export All Data:</strong> Downloads an Excel file with all student data from the database</li>
+                    <li><strong>Export Custom:</strong> Downloads only selected columns (ID, Nome, Email, Turma, Notas)</li>
+                    <li><strong>Refresh Data:</strong> Re-fetches the latest data from the database</li>
                 </ul>
             </div>
         </div>

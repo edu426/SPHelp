@@ -3,9 +3,17 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 
-dotenv.config();
+dotenv.config({
+  path: "../.env"
+});
 const app = express();
 const prisma = new PrismaClient();
+
+// Verificar se a DATABASE_URL está definida
+if (!process.env.DATABASE_URL) {
+  console.error("DATABASE_URL não está definida no ficheiro .env");
+  process.exit(1);
+}
 
 app.use(cors());
 app.use(express.json());
@@ -23,7 +31,7 @@ app.post("/api/sync", async (req, res) => {
   // Se não existir, cria um novo
   if (!Professor) {
     Professor = await prisma.Professor.create({
-      data: { clerkId},
+      data: { clerkId },
     });
     console.log("Novo professor criado:", Professor.id);
   } else {
@@ -33,6 +41,32 @@ app.post("/api/sync", async (req, res) => {
   res.json(Professor);
 });
 
+
+// GET todos os alunos (para testes/admin)
+app.get("/api/alunos", async (req, res) => {
+  try {
+    const alunos = await prisma.Alunos.findMany({
+      include: { professor: true }
+    });
+    res.json(alunos);
+  } catch (error) {
+    console.error("Erro ao buscar alunos:", error);
+    res.status(500).json({ error: "Erro ao buscar alunos" });
+  }
+});
+
+// GET todos os alunos de um professor
+app.get("/api/alunos/:professorId", async (req, res) => {
+  const { professorId } = req.params;
+  try {
+    const alunos = await prisma.Alunos.findMany({
+      where: { professorId }
+    });
+    res.json(alunos);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar alunos do professor" });
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("Servidor do SPHelp ativo");
