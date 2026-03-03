@@ -42,6 +42,24 @@ app.post("/api/sync", async (req, res) => {
 });
 
 
+// POST criar novo aluno
+app.post("/api/alunos", async (req, res) => {
+  const { nome, turma, email, notas, professorId } = req.body;
+
+  if (!nome || !turma || !email || !notas || !professorId) {
+    return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+  }
+
+  try {
+    const aluno = await prisma.Alunos.create({
+      data: { nome, turma, email, notas, professorId },
+    });
+    res.status(201).json(aluno);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao criar aluno." });
+  }
+});
+
 // GET todos os alunos (para testes/admin)
 app.get("/api/alunos", async (req, res) => {
   try {

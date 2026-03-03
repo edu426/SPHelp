@@ -1,0 +1,132 @@
+/* Page wrapper */
+.add-student-page {
+    padding: 3rem 5%;
+    max-width: 640px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Page title */
+.add-student-page h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.4rem;
+}
+
+.add-student-page .subtitle {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* Card */
+.add-student-card {
+    background-color: white;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Form */
+.add-student-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    color: #1a1a1a;
+    background-color: #fafafa;
+    transition: border-color 0.2s ease;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #f4d77e;
+    background-color: white;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+/* Submit button */
+.btn-submit {
+    margin-top: 0.5rem;
+    padding: 0.85rem 1.5rem;
+    background-color: #1a1a1a;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background-color: #333;
+    transform: translateY(-2px);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Feedback messages */
+.feedback-success {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 10px;
+    color: #166534;
+    font-weight: 500;
+}
+
+.feedback-error {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    color: #991b1b;
+    font-weight: 500;
+}
+
+/* Back link */
+.back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}

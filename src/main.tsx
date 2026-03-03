@@ -6,6 +6,7 @@ import Home from './assets/pages/Home.tsx'
 import MainHeader from "./assets/layouts/MainHeader.tsx"
 import Dashboard from "./assets/pages/App/Dashboard.tsx"
 import ExcelTest from "./assets/pages/App/ExcelTest.tsx"
+import AdicionarAluno from "./assets/pages/App/AdicionarAluno.tsx"
 import { ClerkProvider } from "@clerk/clerk-react"
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -23,6 +24,7 @@ createRoot(document.getElementById("root")!).render(
             <Route index element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/excel-test" element={<ExcelTest />} />
+            <Route path="/adicionar-aluno" element={<AdicionarAluno />} />
           </Route>
         </Routes>
       </BrowserRouter>

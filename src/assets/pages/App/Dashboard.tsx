@@ -1,7 +1,6 @@
 import { useUser } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import './Dashboard.css'
-import ExcelTest from "./ExcelTest";
 import { Link } from "react-router-dom";
 
 function Dashboard() {
@@ -34,8 +33,11 @@ function Dashboard() {
 
             <section className="hero">
                 <div className="hero-content">
-                    <h1>Bem vindo nome {user?.firstName}</h1>
-                    <Link to="/excel-test" className="btn btn-hero">Exporta alunos para Excel</Link>
+                    <h1>Bem vindo {user?.firstName}</h1>
+                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        <Link to="/adicionar-aluno" className="btn btn-hero">+ Adicionar Aluno</Link>
+                        <Link to="/excel-test" className="btn btn-hero" style={{ backgroundColor: 'transparent', border: '2px solid #1a1a1a', color: '#1a1a1a' }}>Exportar para Excel</Link>
+                    </div>
                 </div>
             </section>
 
