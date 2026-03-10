@@ -6,6 +6,14 @@
     font-family: 'Inter', sans-serif;
 }
 
+/* Wider wrapper for grid pages */
+.ver-todos-page {
+    padding: 3rem 5%;
+    max-width: 1800px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+}
+
 /* Back link */
 .back-link {
     display: inline-block;
@@ -109,14 +117,14 @@
 /* ── Compact card grid (VerTodosAlunos) ── */
 .alunos-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 1rem;
     margin-top: 1.5rem;
 }
 
 .aluno-card-mini {
     background-color: white;
-    border-radius: 14px;
+    border-radius: 15px;
     padding: 1.25rem 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     display: flex;
@@ -156,10 +164,23 @@
     padding-bottom: 0.6rem;
 }
 
+.btn-view {
+    padding: 0.35rem 1.5rem;
+    background-color: #1a1a1a;
+    color: white;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    display: inline-block;
+}
+
 /* Responsive grid breakpoints */
 @media (max-width: 1024px) {
     .alunos-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(5, 1fr);
     }
 }
 

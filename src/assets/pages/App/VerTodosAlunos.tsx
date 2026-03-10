@@ -46,18 +46,14 @@ export default function VerTodosAluno() {
 
     return (
         <IsLoggedIn>
-            <div className="ver-aluno-page">
+            <div className="ver-todos-page">
                 <Link to="/dashboard" className="back-link">← Voltar ao Dashboard</Link>
 
                 <h1>Todos os Alunos</h1>
-                <p className="subtitle">{students.length} aluno{students.length !== 1 ? 's' : ''} registado{students.length !== 1 ? 's' : ''}.</p>
 
                 <div className="alunos-grid">
                     {students.map((student) => (
                         <div className="aluno-card-mini" key={student.id}>
-                            <div className="aluno-avatar-mini">
-                                {student.nome.charAt(0).toUpperCase()}
-                            </div>
 
                             <div className="info-row">
                                 <span className="info-label">Nome</span>
@@ -73,11 +69,9 @@ export default function VerTodosAluno() {
                                 <span className="info-label">Turma</span>
                                 <span className="info-value">{student.turma}</span>
                             </div>
-
-                            <div className="info-row">
-                                <span className="info-label">Notas</span>
-                                <span className="info-value">{student.notas}</span>
-                            </div>
+                            <Link to={`/ver-aluno/${student.id}`} className="btn btn-view">
+                                Ver
+                            </Link>
                         </div>
                     ))}
                 </div>
