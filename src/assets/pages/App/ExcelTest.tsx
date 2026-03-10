@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
+import { Link } from 'react-router-dom';
 import './ExcelTest.css';
 
 interface Student {
@@ -165,25 +166,27 @@ export default function ExcelTest() {
                 <table className="student-table">
                     <thead>
                         <tr>
-                            <th >ID</th>
-                            <th >Nome</th>
-                            <th >Email</th>
-                            <th >Turma</th>
-                            <th >Notas</th>
-                            <th >Professor ID</th>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Turma</th>
+                            <th>Notas</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {students.map((student) => (
-                            <tr
-                                key={student.id}
-                            >
-                                <td >{student.id}</td>
-                                <td >{student.nome}</td>
-                                <td >{student.email}</td>
-                                <td >{student.turma}</td>
-                                <td >{student.notas}</td>
-                                <td >{student.professorId}</td>
+                            <tr key={student.id}>
+                                <td>{student.id}</td>
+                                <td>{student.nome}</td>
+                                <td>{student.email}</td>
+                                <td>{student.turma}</td>
+                                <td>{student.notas}</td>
+                                <td>
+                                    <Link to={`/ver-aluno/${student.id}`} className="btn btn-view">
+                                        Ver
+                                    </Link>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

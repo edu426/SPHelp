@@ -116,3 +116,19 @@
 .row-odd {
     background-color: #f9fafb;
 }
+
+.btn-view {
+    padding: 0.35rem 0.9rem;
+    background-color: #1a1a1a;
+    color: white;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    display: inline-block;
+}
+
+.btn-view:hover {
+    background-color: #333;
+}

@@ -73,6 +73,18 @@ app.get("/api/alunos", async (req, res) => {
   }
 });
 
+// GET um aluno pelo ID
+app.get("/api/alunos/detalhe/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const aluno = await prisma.Alunos.findUnique({ where: { id } });
+    if (!aluno) return res.status(404).json({ error: "Aluno não encontrado." });
+    res.json(aluno);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar aluno." });
+  }
+});
+
 // GET todos os alunos de um professor
 app.get("/api/alunos/:professorId", async (req, res) => {
   const { professorId } = req.params;
