@@ -69,8 +69,8 @@ export default function VerTodosAluno() {
                                 <span className="info-label">Turma</span>
                                 <span className="info-value">{student.turma}</span>
                             </div>
-                            <Link to={`/ver-aluno/${student.id}`} className="btn btn-view">
-                                Ver
+                            <Link to={`/editar-aluno/${student.id}`} className="btn btn-view">
+                                Editar
                             </Link>
                         </div>
                     ))}

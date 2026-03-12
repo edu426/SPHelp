@@ -73,12 +73,41 @@ app.get("/api/alunos", async (req, res) => {
   }
 });
 
+// PUT atualizar aluno pelo ID
+// Chamado pelo EditarAluno.tsx quando o utilizador clica em "Guardar" depois de editar
+app.put("/api/alunos/:id", async (req, res) => {
+  const { id } = req.params;
+  const { nome, turma, email, notas } = req.body;
+
+  // Validar os campos necessários
+  if (!nome || !turma || !email) {
+    return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+  }
+
+  try {
+    // Atualiza o aluno pelo ID
+    const aluno = await prisma.Alunos.update({
+      where: { id },
+      data: { nome, turma, email, notas },
+    });
+
+    // Retorna o aluno atualizado para o frontend
+    res.json(aluno);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao atualizar aluno." });
+  }
+});
+
 // GET um aluno pelo ID
+// Chamado pelo EditarAluno.tsx na página de carregamento para buscar os detalhes completos de um único aluno
 app.get("/api/alunos/detalhe/:id", async (req, res) => {
+  // ID do aluno
   const { id } = req.params;
   try {
+    // findUnique retorna o aluno que corresponde exatamente a este ID
     const aluno = await prisma.Alunos.findUnique({ where: { id } });
     if (!aluno) return res.status(404).json({ error: "Aluno não encontrado." });
+
     res.json(aluno);
   } catch (error) {
     res.status(500).json({ error: "Erro ao buscar aluno." });

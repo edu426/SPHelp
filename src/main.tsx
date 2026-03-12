@@ -7,7 +7,7 @@ import MainHeader from "./assets/layouts/MainHeader.tsx"
 import Dashboard from "./assets/pages/App/Dashboard.tsx"
 import ExcelTest from "./assets/pages/App/ExcelTest.tsx"
 import AdicionarAluno from "./assets/pages/App/AdicionarAluno.tsx"
-import VerAluno from "./assets/pages/App/VerAluno.tsx"
+import EditarAluno from "./assets/pages/App/EditarAluno.tsx"
 import { ClerkProvider } from "@clerk/clerk-react"
 import VerTodosAlunos from "./assets/pages/App/VerTodosAlunos.tsx"
 
@@ -27,7 +27,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/excel-test" element={<ExcelTest />} />
             <Route path="/adicionar-aluno" element={<AdicionarAluno />} />
-            <Route path="/ver-aluno/:id" element={<VerAluno />} />
+            <Route path="/editar-aluno/:id" element={<EditarAluno />} />
             <Route path="/ver-todos-alunos" element={<VerTodosAlunos />} />
           </Route>
         </Routes>

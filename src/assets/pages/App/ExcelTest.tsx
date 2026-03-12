@@ -185,8 +185,8 @@ export default function ExcelTest() {
                                     <td>{student.turma}</td>
                                     <td>{student.notas}</td>
                                     <td>
-                                        <Link to={`/ver-aluno/${student.id}`} className="btn btn-view">
-                                            Ver
+                                        <Link to={`/editar-aluno/${student.id}`} className="btn btn-view">
+                                            Editar
                                         </Link>
                                     </td>
                                 </tr>
