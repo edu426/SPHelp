@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import IsLoggedIn from '../../functions/IsLoggedIn';
 import './VerAluno.css';
 
-// Defines the shape of a Student object (same as the DB model)
+// Objeto que representa o aluno
 interface Student {
     id: string;
     nome: string;
@@ -13,10 +13,20 @@ interface Student {
     professorId: string;
 }
 
+// Objeto que representa a presença
+interface Presenca {
+    id: string;
+    alunoId: string;
+    data: string;
+    presente: boolean;  // true = presente, false = falta
+    justifica: boolean;
+}
+
 export default function EditarAluno() {
-    // Get id
+    // Get the :id from the URL
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+
     // Guarda os dados do aluno
     const [aluno, setAluno] = useState<Student | null>(null);
 
@@ -33,7 +43,19 @@ export default function EditarAluno() {
     const [saving, setSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
 
-    // Fetch
+    // Guarda as presenças do aluno (faltas)
+    const [presencas, setPresencas] = useState<Presenca[]>([]);
+    const [loadingFaltas, setLoadingFaltas] = useState(true);
+
+    // Visibilidade do formulário de adicionar falta
+    const [showFaltaForm, setShowFaltaForm] = useState(false);
+
+    // Valores para a nova falta que está a ser registada
+    const [novaFalta, setNovaFalta] = useState({ presente: false, justifica: false, data: '' });
+    const [addingFalta, setAddingFalta] = useState(false);
+    const [faltaMessage, setFaltaMessage] = useState('');
+
+    // Fetch aos dados do aluno
     useEffect(() => {
         const fetchAluno = async () => {
             try {
@@ -56,6 +78,24 @@ export default function EditarAluno() {
         if (id) fetchAluno();
     }, [id]);
 
+    // Fetch das presenças deste aluno
+    useEffect(() => {
+        const fetchPresencas = async () => {
+            try {
+                setLoadingFaltas(true);
+                const response = await fetch(`http://localhost:3000/api/presenca/${id}`);
+                if (!response.ok) throw new Error();
+                const data = await response.json();
+                setPresencas(data);
+            } catch {
+                // A lista ficará vazia
+            } finally {
+                setLoadingFaltas(false);
+            }
+        };
+        if (id) fetchPresencas();
+    }, [id]);
+
     // Chamado a cada toque no teclado em qualquer campo.
     // Atualiza apenas o campo alterado dentro do objeto `form`.
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -70,15 +110,13 @@ export default function EditarAluno() {
             const response = await fetch(`http://localhost:3000/api/alunos/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form), // Envia os valores atuais do form como JSON
+                body: JSON.stringify(form),
             });
             if (!response.ok) throw new Error('Erro ao guardar.');
 
-            // Atualiza com a resposta do servidor
             const updated = await response.json();
             setAluno(updated);
 
-            // Sair do modo de edição. Mensagem de sucesso por 3 segundos
             setIsEditing(false);
             setSaveMessage('✅ Alterações guardadas com sucesso!');
             setTimeout(() => setSaveMessage(''), 3000);
@@ -94,6 +132,39 @@ export default function EditarAluno() {
         if (aluno) setForm({ nome: aluno.nome, email: aluno.email, turma: aluno.turma, notas: aluno.notas });
         setIsEditing(false);
     };
+
+    // Envia uma nova presença para o POST /api/presenca
+    const handleAddFalta = async () => {
+        setAddingFalta(true);
+        setFaltaMessage('');
+        try {
+            const response = await fetch('http://localhost:3000/api/presenca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alunoId: id, presente: novaFalta.presente, justifica: novaFalta.justifica, data: novaFalta.data || undefined }),
+            });
+            if (!response.ok) throw new Error('Erro ao registar.');
+            const novo = await response.json();
+
+            // Adiciona a nova presença ao topo da lista
+            setPresencas([novo, ...presencas]);
+            setShowFaltaForm(false);
+            setNovaFalta({ presente: false, justifica: false, data: '' });
+            setFaltaMessage('✅ Falta registada com sucesso!');
+            setTimeout(() => setFaltaMessage(''), 3000);
+        } catch (err: any) {
+            setFaltaMessage('❌ ' + (err.message || 'Erro ao registar falta.'));
+        } finally {
+            setAddingFalta(false);
+        }
+    };
+
+    // Formata a data ISO para DD/MM/YYYY
+    const formatDate = (iso: string) =>
+        new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    // Conta o total de faltas para o resumo
+    const totalFaltas = presencas.filter(p => !p.presente).length;
 
     // Mensagem de loading enquanto o fetch está em progresso
     if (loading) return <div className="ver-aluno-loading">A carregar informações do aluno...</div>;
@@ -136,6 +207,7 @@ export default function EditarAluno() {
                     </div>
                 )}
 
+                {/* ── Student info card ── */}
                 <div className="aluno-card">
                     <div className="aluno-avatar">{initials}</div>
 
@@ -171,6 +243,111 @@ export default function EditarAluno() {
                             : <span className="info-value">{aluno.notas}</span>
                         }
                     </div>
+                </div>
+
+                {/* ── Secção de Presenças ── */}
+                <div className="faltas-section">
+                    <div className="faltas-header">
+                        <div>
+                            <h2>Presenças</h2>
+                            {!loadingFaltas && (
+                                <p className="faltas-summary">
+                                    {totalFaltas === 0
+                                        ? 'Sem faltas registadas.'
+                                        : `${totalFaltas} falta${totalFaltas > 1 ? 's' : ''} registada${totalFaltas > 1 ? 's' : ''}`}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Mensagem de feedback após adicionar uma presença */}
+                    {faltaMessage && (
+                        <div className={faltaMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
+                            {faltaMessage}
+                        </div>
+                    )}
+
+                    {/* Lista de presenças */}
+                    {loadingFaltas ? (
+                        <p className="faltas-loading">A carregar faltas...</p>
+                    ) : presencas.length === 0 ? (
+                        <p className="faltas-empty">Nenhum registo encontrado.</p>
+                    ) : (
+                        <div className="faltas-list">
+                            <div className="falta-row falta-row-header">
+                                <span>Data</span>
+                                <span>Estado</span>
+                                <span>Justificada</span>
+                            </div>
+                            {presencas.map((p) => (
+                                <div key={p.id} className={`falta-row ${!p.presente ? 'falta-row-absent' : ''}`}>
+                                    <span>{formatDate(p.data)}</span>
+                                    <span className={p.presente ? 'badge-presente' : 'badge-falta'}>
+                                        {p.presente ? '✅ Presente' : '❌ Falta'}
+                                    </span>
+                                    <span>{!p.presente ? (p.justifica ? 'Sim' : 'Não') : '—'}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Formulário para registar uma nova presença */}
+                    {showFaltaForm && (
+                        <div className="falta-form">
+                            <p className="falta-form-title">Registar nova presença</p>
+
+                            {/* Date and time picker */}
+                            <div className="form-group">
+                                <label className="info-label">Data e Hora (opcional)</label>
+                                <input
+                                    type="datetime-local"
+                                    className="edit-input"
+                                    value={novaFalta.data}
+                                    onChange={e => setNovaFalta({ ...novaFalta, data: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="falta-toggle">
+                                <button
+                                    className={`toggle-btn ${novaFalta.presente ? 'toggle-active' : ''}`}
+                                    onClick={() => setNovaFalta({ ...novaFalta, presente: true, justifica: false })}
+                                >
+                                    ✅ Presente
+                                </button>
+                                <button
+                                    className={`toggle-btn ${!novaFalta.presente ? 'toggle-active' : ''}`}
+                                    onClick={() => setNovaFalta({ ...novaFalta, presente: false })}
+                                >
+                                    ❌ Falta
+                                </button>
+                            </div>
+
+                            {/* Checkbox "Justificada" */}
+                            {!novaFalta.presente && (
+                                <label className="falta-check-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={novaFalta.justifica}
+                                        onChange={e => setNovaFalta({ ...novaFalta, justifica: e.target.checked })}
+                                    />
+                                    Falta justificada
+                                </label>
+                            )}
+
+                            <div className="falta-form-actions">
+                                <button className="btn-save" onClick={handleAddFalta} disabled={addingFalta}>
+                                    {addingFalta ? 'A registar...' : 'Confirmar'}
+                                </button>
+                                <button className="btn-cancel" onClick={() => setShowFaltaForm(false)}>Cancelar</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {!showFaltaForm && (
+                        <button className="btn-add-falta" onClick={() => setShowFaltaForm(true)}>
+                            + Registar Presença
+                        </button>
+                    )}
                 </div>
             </div>
         </IsLoggedIn>

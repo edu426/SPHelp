@@ -60,21 +60,26 @@ app.post("/api/alunos", async (req, res) => {
   }
 });
 
-// POST criar nova presenca
+// POST registar nova presença
 app.post("/api/presenca", async (req, res) => {
-  const { alunoId, data, presente, justifica } = req.body;
+  const { alunoId, presente, justifica, data } = req.body;
 
-  if (!alunoId || !data || !presente || !justifica) {
+  if (!alunoId || presente == null || justifica == null) {
     return res.status(400).json({ error: "Todos os campos são obrigatórios." });
   }
 
   try {
-    const presenca = await prisma.Presenca.create({
-      data: { alunoId, data, presente, justifica },
+    const registo = await prisma.Presenca.create({
+      data: {
+        alunoId,
+        presente,
+        justifica,
+        ...(data ? { data: new Date(data) } : {}),
+      },
     });
-    res.status(201).json(presenca);
+    res.status(201).json(registo);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao registar presenca." });
+    res.status(500).json({ error: "Erro ao registar presença." });
   }
 });
 
@@ -91,21 +96,6 @@ app.get("/api/alunos", async (req, res) => {
     res.status(500).json({ error: "Erro ao buscar alunos" });
   }
 });
-
-app.get("/api/presenca", async (req, res) => {
-  try {
-    const presenca = await prisma.Presenca.findMany({
-      include: { aluno: true }
-    });
-    res.json(presenca);
-  } catch (error) {
-    console.error("Erro ao buscar presencas:", error);
-    res.status(500).json({ error: "Erro ao buscar presencas" });
-  }
-});
-
-
-
 
 //-------------Atualização de dados-------------
 // PUT atualizar aluno pelo ID
@@ -169,6 +159,21 @@ app.get("/api/alunos/:professorId", async (req, res) => {
 app.get("/", (req, res) => {
   res.send("Servidor do SPHelp ativo");
 });
+
+// GET todas as presenças de um aluno
+app.get("/api/presenca/:alunoId", async (req, res) => {
+  const { alunoId } = req.params;
+  try {
+    const registos = await prisma.Presenca.findMany({
+      where: { alunoId },
+      orderBy: { data: "desc" }, // Mais recentes primeiro
+    });
+    res.json(registos);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar presenças." });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

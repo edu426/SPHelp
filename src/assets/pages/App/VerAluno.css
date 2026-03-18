@@ -305,3 +305,167 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Faltas Section ── */
+.faltas-section {
+    margin-top: 2rem;
+}
+
+.faltas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.faltas-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.2rem;
+}
+
+.faltas-summary {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.faltas-loading,
+.faltas-empty {
+    color: #999;
+    font-size: 0.95rem;
+    padding: 1rem 0;
+}
+
+/* List container */
+.faltas-list {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+/* Each row: header and data rows share the same grid */
+.falta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid #f5f0d8;
+    font-size: 0.95rem;
+    align-items: center;
+}
+
+.falta-row:last-child {
+    border-bottom: none;
+}
+
+/* Column header row */
+.falta-row-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: #fafafa;
+}
+
+/* Highlight rows where the student was absent */
+.falta-row-absent {
+    background-color: #fff8f8;
+}
+
+/* Presente / Falta badges */
+.badge-presente {
+    color: #166534;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.badge-falta {
+    color: #991b1b;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ── Inline Add Falta Form ── */
+.falta-form {
+    background-color: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.falta-form-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+/* Presente / Falta toggle button pair */
+.falta-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    background-color: white;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Active state for the selected toggle option */
+.toggle-active {
+    border-color: #1a1a1a;
+    background-color: #1a1a1a;
+    color: white;
+}
+
+/* Justificada checkbox label */
+.falta-check-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+}
+
+.falta-form-actions {
+    display: flex;
+    gap: 0.6rem;
+}
+
+/* Add Falta CTA button */
+.btn-add-falta {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #f4d77e;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-add-falta:hover {
+    background-color: #edc84a;
+    transform: translateY(-2px);
+}
