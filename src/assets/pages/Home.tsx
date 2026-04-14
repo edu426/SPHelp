@@ -20,7 +20,8 @@ function Home() {
                     )}
                 </div>
                 <div className="hero-image">
-                    <img src="src/assets/images/laptop_early.png" alt="SPHelp Dashboard Preview" width="1899" height="886" />
+                    <img id="laptop" src="src/assets/images/laptop_early.png" alt="SPHelp Dashboard Preview" width="1899" height="886" />
+                    <img id="phone" src="src/assets/images/phone.png" alt="SPHelp Dashboard Preview mobile" />
                 </div>
             </section>
 

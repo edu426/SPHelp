@@ -119,6 +119,10 @@
     line-height: 1.5;
 }
 
+#phone {
+    display: none;
+}
+
 /* Responsividade Home */
 @media (max-width: 968px) {
     .hero {
@@ -133,6 +137,17 @@
 
     .hero-image {
         justify-content: center;
+    }
+
+    #laptop {
+        display: none;
+    }
+
+    #phone {
+        display: block;
+        max-width: 320px;
+        width: 90%;
+        margin: 0 auto;
     }
 
     .features {
