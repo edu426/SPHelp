@@ -14,15 +14,15 @@ function MainHeader() {
                     SPHelp
                 </Link>
                 <nav className="nav-links">
-                    <a className="nav-link" style={{cursor: "pointer"}}>Ajuda</a>
+                    <a className="nav-link" id="ajuda" style={{ cursor: "pointer" }}>Ajuda</a>
                     {isSignedIn ? (
-                        <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+                        <div className="user-actions">
                             <Link to="/dashboard" className="btn-entrar">Dashboard</Link>
-                            <UserButton afterSignOutUrl="/"/>
+                            <UserButton afterSignOutUrl="/" />
                         </div>
                     ) : (
                         <SignInButton>
-                            <a className="btn-entrar" style={{cursor: "pointer"}}>Entrar</a>
+                            <a className="btn-entrar" style={{ cursor: "pointer" }}>Entrar</a>
                         </SignInButton>
                     )}
                 </nav>

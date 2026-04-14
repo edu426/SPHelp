@@ -36,6 +36,12 @@ header {
     color: #FFFFFF;
 }
 
+.user-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
 .btn-entrar {
     background-color: var(--text-dark);
     color: #FFFFFF !important;
@@ -93,13 +99,32 @@ footer {
 
 @media (max-width: 640px) {
     header {
-        flex-direction: column;
-        gap: 20px;
+        flex-direction: row;
+        gap: 10px;
+        padding: 20px 5%;
+    }
+
+    .logo {
+        font-size: 24px;
+        gap: 5px;
     }
 
     .nav-links {
-        flex-direction: column;
-        gap: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .user-actions {
+        gap: 10px;
+    }
+
+    .btn-entrar {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    #ajuda {
+        display: none;
     }
 
     .footer-links {
