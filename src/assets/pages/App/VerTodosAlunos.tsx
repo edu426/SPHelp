@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import IsLoggedIn from '../../functions/IsLoggedIn';
 import './VerAluno.css';
+import { useUser } from '@clerk/clerk-react';
 
 interface Student {
     id: string;
@@ -14,6 +15,8 @@ interface Student {
 }
 
 export default function VerTodosAluno() {
+    const { user } = useUser();
+    const [professorId, setProfessorId] = useState<string | null>(null);
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -22,29 +25,41 @@ export default function VerTodosAluno() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTurma, setFilterTurma] = useState('');
 
+
+    useEffect(() => {
+        if (user) {
+            fetch("http://localhost:3000/api/sync", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clerkId: user.id }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log("Sincronizado com sucesso:", data);
+                    setProfessorId(data.id);
+                })
+                .catch((err) => {
+                    console.error("Erro ao sincronizar:", err);
+                });
+        }
+    }, [user]);
+
     // Fetch alunos do backend
     useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch('http://localhost:3000/api/alunos');
-                if (!response.ok) throw new Error('Failed to fetch students');
-                const data = await response.json();
-                setStudents(data);
-            } catch (err: any) {
-                setError('Could not connect to backend. Make sure it is running on port 3000.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStudents();
-    }, []);
+        if (!professorId) return;
+        console.log(professorId);
+        setLoading(true);
+        fetch(`http://localhost:3000/api/alunos/${professorId}`)
+            .then((res) => res.json())
+            .then((data) => setStudents(data))
+            .catch((err) => console.error("Erro ao buscar alunos:", err))
+            .finally(() => setLoading(false));
+    }, [professorId]);
 
     // Unique list of turmas for the filter dropdown
     const turmas = useMemo(() =>
         [...new Set(students.map(s => s.turma))].sort()
-    , [students]);
+        , [students]);
 
     // Filtered list — updates instantly as user types or picks a turma
     const filteredStudents = useMemo(() => {
@@ -124,15 +139,15 @@ export default function VerTodosAluno() {
                                     <span className="info-value">{student.nome}</span>
                                 </div>
 
-                            <div className="info-row">
-                                <span className="info-label">Email</span>
-                                <span className="info-value">{student.email}</span>
-                            </div>
+                                <div className="info-row">
+                                    <span className="info-label">Email</span>
+                                    <span className="info-value">{student.email}</span>
+                                </div>
 
-                            <div className="info-row">
-                                <span className="info-label">Turma</span>
-                                <span className="info-value">{student.turma}</span>
-                            </div>
+                                <div className="info-row">
+                                    <span className="info-label">Turma</span>
+                                    <span className="info-value">{student.turma}</span>
+                                </div>
                                 <Link to={`/editar-aluno/${student.id}`} className="btn-view" style={{ textAlign: 'center', display: 'block', marginTop: '1rem' }}>
                                     Editar
                                 </Link>

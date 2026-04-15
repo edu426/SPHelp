@@ -41,6 +41,7 @@ function Dashboard() {
     // Quando temos o professorId, busca os alunos mais recentes
     useEffect(() => {
         if (!professorId) return;
+        console.log(professorId);
         setLoadingAlunos(true);
         fetch(`http://localhost:3000/api/alunos/recentes/${professorId}`)
             .then((res) => res.json())

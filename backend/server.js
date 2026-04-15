@@ -97,6 +97,19 @@ app.get("/api/alunos", async (req, res) => {
   }
 });
 
+// GET 5 alunos editados mais recentemente
+app.get("/api/alunos/recentes", async (req, res) => {
+  try {
+    const alunos = await prisma.Alunos.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+    });
+    res.json(alunos);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar alunos recentes." });
+  }
+});
+
 //-------------Atualização de dados-------------
 // PUT atualizar aluno pelo ID
 // Chamado pelo EditarAluno.tsx quando o utilizador clica em "Guardar" depois de editar
@@ -143,7 +156,7 @@ app.get("/api/alunos/detalhe/:id", async (req, res) => {
   }
 });
 
-// GET 5 alunos editados mais recentemente de um professor
+// GET 3 alunos editados mais recentemente de um professor
 app.get("/api/alunos/recentes/:professorId", async (req, res) => {
   const { professorId } = req.params;
   try {
