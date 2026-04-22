@@ -9,8 +9,8 @@ function MainHeader() {
     return (
         <div>
             <header>
-                <Link to="/dashboard" className="logo">
-                    <i className="ri-book-read-fill"></i>
+                <Link to="/dashboard" className="logo" style={{ backgroundColor: '#222222'}}>
+                    <img src="/src/assets/images/SPHELP_noBG.png" alt="SPHELP" width={60} height={50} />
                     SPHelp
                 </Link>
                 <nav className="nav-links">
