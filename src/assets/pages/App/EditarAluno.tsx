@@ -65,7 +65,7 @@ export default function EditarAluno() {
 
     useEffect(() => {
         if (user) {
-            fetch("http://localhost:3000/api/sync", {
+            fetch("/api/sync", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ clerkId: user.id }),
@@ -86,7 +86,7 @@ export default function EditarAluno() {
         const fetchAluno = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`http://localhost:3000/api/alunos/detalhe/${id}`);
+                const response = await fetch(`/api/alunos/detalhe/${id}`);
                 if (!response.ok) throw new Error('Aluno não encontrado.');
                 const data = await response.json();
 
@@ -109,7 +109,7 @@ export default function EditarAluno() {
         const fetchPresencas = async () => {
             try {
                 setLoadingFaltas(true);
-                const response = await fetch(`http://localhost:3000/api/presenca/${id}`);
+                const response = await fetch(`/api/presenca/${id}`);
                 if (!response.ok) throw new Error();
                 const data = await response.json();
                 setPresencas(data);
@@ -144,7 +144,7 @@ export default function EditarAluno() {
         setSaving(true);
         setSaveMessage('');
         try {
-            const response = await fetch(`http://localhost:3000/api/alunos/${id}`, {
+            const response = await fetch(`/api/alunos/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),
@@ -175,7 +175,7 @@ export default function EditarAluno() {
         setAddingFalta(true);
         setFaltaMessage('');
         try {
-            const response = await fetch('http://localhost:3000/api/presenca', {
+            const response = await fetch('/api/presenca', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ alunoId: id, presente: novaFalta.presente, justifica: novaFalta.justifica, data: novaFalta.data || undefined }),
@@ -203,7 +203,7 @@ export default function EditarAluno() {
     // Envia um PUT para atualizar só o campo `justifica` de uma presença
     const handleJustificar = async (presencaId: string, novoValor: boolean) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/presenca/${presencaId}`, {
+            const response = await fetch(`/api/presenca/${presencaId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ justifica: novoValor }),

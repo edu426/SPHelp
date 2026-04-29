@@ -22,7 +22,7 @@ function Dashboard() {
     // Sincroniza o utilizador e guarda o professorId
     useEffect(() => {
         if (user) {
-            fetch("http://localhost:3000/api/sync", {
+            fetch("/api/sync", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ clerkId: user.id }),
@@ -43,7 +43,7 @@ function Dashboard() {
         if (!professorId) return;
         console.log(professorId);
         setLoadingAlunos(true);
-        fetch(`http://localhost:3000/api/alunos/recentes/${professorId}`)
+        fetch(`/api/alunos/recentes/${professorId}`)
             .then((res) => res.json())
             .then((data) => setAlunosRecentes(data))
             .catch((err) => console.error("Erro ao buscar alunos recentes:", err))

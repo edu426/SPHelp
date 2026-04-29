@@ -24,7 +24,7 @@ export default function ExcelTest() {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:3000/api/alunos');
+                const response = await fetch('/api/alunos');
                 if (!response.ok) throw new Error('Failed to fetch students');
                 const data = await response.json();
                 setStudents(data);
@@ -88,7 +88,7 @@ export default function ExcelTest() {
         setError('');
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/alunos');
+            const response = await fetch('/api/alunos');
             if (!response.ok) throw new Error('Failed to fetch');
             const data = await response.json();
             setStudents(data);

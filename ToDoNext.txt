@@ -11,12 +11,26 @@ Ferramentas
     > Guia dos Problema (se for algo simples )
     > Tabela de Presença (Criar Nova tabela na DB com [Data_da_Falta;Id_Aluno;Id;Tipo_Falta;Notas]) - feito
     > Pesquisa e Filtros (Pesquisar alunos na tabela e filtrar por turma) - feito
-    > Razao da falta justificada + tirar vermelho das faltas justificadas
+    > --EXPRIMENTAL-- ao escrever no "Diagnosotico" fzr resumo de AI sobre o problema.
+
+
+Exportar
+    > Partilha de INformações sobre um unico aluno
     > exportar tabela de faltas
-    > validar email do aluno + alunos n podem ter o msm email
+    > Exportar informação especifica sobre um aluno
 
 Dashboard
     > Estatísticas e Resumo (Total de alunos, taxa de presenças, etc.)
+
+Editar Alunos
+    > tirar do email do aluno
+    > Data de nascimento e idade do aluno + mandar email no aniversário
+    > Razao da falta justificada + tirar vermelho das faltas justificadas
+    > Nome do diretor de turma
+    >Medidas de Suporte à Aprendizagem e à Inclusão(MSAI) - ver documento(tabela)
+    > Adicionar tabela "Terapias"
+    > Mudar nome de "Notas" para "Diagnosotico"
+    >Estrategias de ensino orientadas ao perfil do aluno (professor preenche mais uma caixa de texto basica)
 
 Layouts
     > Melhorar Layouts e Design geral - mais ou menos

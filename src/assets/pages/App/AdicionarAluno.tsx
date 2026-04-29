@@ -23,7 +23,7 @@ export default function AdicionarAluno() {
     // Obter o ID do professor a partir do Clerk ID
     useEffect(() => {
         if (user) {
-            fetch('http://localhost:3000/api/sync', {
+            fetch('/api/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clerkId: user.id }),
@@ -63,7 +63,7 @@ export default function AdicionarAluno() {
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/alunos', {
+            const response = await fetch('/api/alunos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...form, professorId }),

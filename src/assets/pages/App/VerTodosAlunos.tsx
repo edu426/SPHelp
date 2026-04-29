@@ -28,7 +28,7 @@ export default function VerTodosAluno() {
 
     useEffect(() => {
         if (user) {
-            fetch("http://localhost:3000/api/sync", {
+            fetch("/api/sync", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ clerkId: user.id }),
@@ -49,7 +49,7 @@ export default function VerTodosAluno() {
         if (!professorId) return;
         console.log(professorId);
         setLoading(true);
-        fetch(`http://localhost:3000/api/alunos/${professorId}`)
+        fetch(`/api/alunos/${professorId}`)
             .then((res) => res.json())
             .then((data) => setStudents(data))
             .catch((err) => console.error("Erro ao buscar alunos:", err))
