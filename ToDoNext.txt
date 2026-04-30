@@ -15,6 +15,7 @@ Ferramentas
 
 
 Exportar
+    > Nao mostrar todos os alunos da Db so os de cada professor
     > Partilha de INformações sobre um unico aluno
     > exportar tabela de faltas
     > Exportar informação especifica sobre um aluno

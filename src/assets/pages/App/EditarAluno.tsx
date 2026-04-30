@@ -8,7 +8,6 @@ import { useUser } from '@clerk/clerk-react';
 interface Student {
     id: string;
     nome: string;
-    email: string;
     turma: string;
     notas: string;
     professorId: string;
@@ -42,7 +41,11 @@ export default function EditarAluno() {
     const [isEditing, setIsEditing] = useState(false);
 
     // Guarda os valores iniciais enquanto se edita
-    const [form, setForm] = useState({ nome: '', email: '', turma: '', notas: '', foto: '' });
+    const [form, setForm] = useState({ nome: '', turma: '', notas: '', foto: '' });
+
+    // MSAI State
+    const [msai, setMsai] = useState("000000000000000");
+    const [originalMsai, setOriginalMsai] = useState("000000000000000");
 
     // Espera q o PUT acabe
     const [saving, setSaving] = useState(false);
@@ -93,7 +96,17 @@ export default function EditarAluno() {
                 setAluno(data);
 
                 // insere os valores iniciais nos campos
-                setForm({ nome: data.nome, email: data.email, turma: data.turma, notas: data.notas, foto: data.foto || '' });
+                setForm({ nome: data.nome, turma: data.turma, notas: data.notas, foto: data.foto || '' });
+
+                // Fetch MSAI
+                const msaiResponse = await fetch(`/api/msai/${id}`);
+                if (msaiResponse.ok) {
+                    const msaiData = await msaiResponse.json();
+                    if (msaiData && msaiData.msai) {
+                        setMsai(msaiData.msai);
+                        setOriginalMsai(msaiData.msai);
+                    }
+                }
             } catch (err: any) {
                 setError(err.message || 'Erro ao carregar dados do aluno.');
             } finally {
@@ -139,6 +152,12 @@ export default function EditarAluno() {
         }
     };
 
+    const handleMsaiChange = (index: number) => {
+        if (!isEditing) return;
+        const newMsai = msai.substring(0, index) + (msai[index] === '1' ? '0' : '1') + msai.substring(index + 1);
+        setMsai(newMsai);
+    };
+
     // Envia os dados para o PUT /api/alunos/:id
     const handleSave = async () => {
         setSaving(true);
@@ -151,8 +170,17 @@ export default function EditarAluno() {
             });
             if (!response.ok) throw new Error('Erro ao guardar.');
 
+            // Save MSAI
+            const msaiResponse = await fetch(`/api/msai/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ msai }),
+            });
+            if (!msaiResponse.ok) throw new Error('Erro ao guardar medidas MSAI.');
+
             const updated = await response.json();
             setAluno(updated);
+            setOriginalMsai(msai);
 
             setIsEditing(false);
             setSaveMessage('✅ Alterações guardadas com sucesso!');
@@ -166,7 +194,8 @@ export default function EditarAluno() {
 
     // Reseta os valores iniciais e sai do modo de edição
     const handleCancel = () => {
-        if (aluno) setForm({ nome: aluno.nome, email: aluno.email, turma: aluno.turma, notas: aluno.notas, foto: aluno.foto || '' });
+        if (aluno) setForm({ nome: aluno.nome, turma: aluno.turma, notas: aluno.notas, foto: aluno.foto || '' });
+        setMsai(originalMsai);
         setIsEditing(false);
     };
 
@@ -299,14 +328,6 @@ export default function EditarAluno() {
                         </div>
 
                         <div className="info-row">
-                            <span className="info-label">Email</span>
-                            {isEditing
-                                ? <input className="edit-input" name="email" type="email" value={form.email} onChange={handleChange} />
-                                : <span className="info-value">{aluno.email}</span>
-                            }
-                        </div>
-
-                        <div className="info-row">
                             <span className="info-label">Turma</span>
                             {isEditing
                                 ? <input className="edit-input" name="turma" value={form.turma} onChange={handleChange} />
@@ -321,6 +342,39 @@ export default function EditarAluno() {
                                 ? <textarea className="edit-input edit-textarea" name="notas" value={form.notas} onChange={handleChange} />
                                 : <span className="info-value">{aluno.notas}</span>
                             }
+                        </div>
+                    </div>
+
+                    {/* ── Secção de MSAI ── */}
+                    <div className="msai-section">
+                        <div className="faltas-header">
+                            <h2>Medidas de Suporte à Aprendizagem e à Inclusão</h2>
+                        </div>
+                        <div className="msai-columns">
+                            <div className="msai-column">
+                                <h3>Medidas Universais</h3>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[0] === '1'} onChange={() => handleMsaiChange(0)} disabled={!isEditing} /> Diferenciação pedagógica</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[1] === '1'} onChange={() => handleMsaiChange(1)} disabled={!isEditing} /> Acomodações curriculares</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[2] === '1'} onChange={() => handleMsaiChange(2)} disabled={!isEditing} /> O enriquecimento curricular</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[3] === '1'} onChange={() => handleMsaiChange(3)} disabled={!isEditing} /> A promoção do comportamento pró-social</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[4] === '1'} onChange={() => handleMsaiChange(4)} disabled={!isEditing} /> A intervenção com foco académico ou comportamental em pequenos grupos</label>
+                            </div>
+                            <div className="msai-column">
+                                <h3>Medidas Seletivas</h3>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[5] === '1'} onChange={() => handleMsaiChange(5)} disabled={!isEditing} /> Os percursos curriculares diferenciados</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[6] === '1'} onChange={() => handleMsaiChange(6)} disabled={!isEditing} /> As adaptações curriculares não significativas</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[7] === '1'} onChange={() => handleMsaiChange(7)} disabled={!isEditing} /> Apoio psicopedagógico</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[8] === '1'} onChange={() => handleMsaiChange(8)} disabled={!isEditing} /> A antecipação e o reforço das aprendizagens</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[9] === '1'} onChange={() => handleMsaiChange(9)} disabled={!isEditing} /> O apoio tutorial</label>
+                            </div>
+                            <div className="msai-column">
+                                <h3>Medidas Adicionais</h3>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[10] === '1'} onChange={() => handleMsaiChange(10)} disabled={!isEditing} /> A frequência do ano de escolaridade por disciplinas</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[11] === '1'} onChange={() => handleMsaiChange(11)} disabled={!isEditing} /> As adaptações curriculares significativas</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[12] === '1'} onChange={() => handleMsaiChange(12)} disabled={!isEditing} /> O plano individual de transição</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[13] === '1'} onChange={() => handleMsaiChange(13)} disabled={!isEditing} /> O desenvolvimento de metodologias e estratégias de ensino estruturado</label>
+                                <label className="msai-checkbox"><input type="checkbox" checked={msai[14] === '1'} onChange={() => handleMsaiChange(14)} disabled={!isEditing} /> O desenvolvimento de competências de autonomia pessoal e social</label>
+                            </div>
                         </div>
                     </div>
 

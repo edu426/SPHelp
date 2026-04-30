@@ -44,15 +44,15 @@ app.post("/api/sync", async (req, res) => {
 //-------------Criação de dados-------------
 // POST criar novo aluno
 app.post("/api/alunos", async (req, res) => {
-  const { nome, turma, email, notas, professorId, foto } = req.body;
+  const { nome, turma, notas, professorId, foto } = req.body;
 
-  if (!nome || !turma || !email || !notas || !professorId) {
+  if (!nome || !turma || !notas || !professorId) {
     return res.status(400).json({ error: "Todos os campos são obrigatórios." });
   }
 
   try {
     const aluno = await prisma.Alunos.create({
-      data: { nome, turma, email, notas, professorId, foto },
+      data: { nome, turma, notas, professorId, foto },
     });
     res.status(201).json(aluno);
   } catch (error) {
@@ -115,10 +115,10 @@ app.get("/api/alunos/recentes", async (req, res) => {
 // Chamado pelo EditarAluno.tsx quando o utilizador clica em "Guardar" depois de editar
 app.put("/api/alunos/:id", async (req, res) => {
   const { id } = req.params;
-  const { nome, turma, email, notas, foto } = req.body;
+  const { nome, turma, notas, foto } = req.body;
 
   // Validar os campos necessários
-  if (!nome || !turma || !email) {
+  if (!nome || !turma || !notas) {
     return res.status(400).json({ error: "Todos os campos são obrigatórios." });
   }
 
@@ -126,7 +126,7 @@ app.put("/api/alunos/:id", async (req, res) => {
     // Atualiza o aluno pelo ID
     const aluno = await prisma.Alunos.update({
       where: { id },
-      data: { nome, turma, email, notas, foto },
+      data: { nome, turma, notas, foto },
     });
 
     // Retorna o aluno atualizado para o frontend
@@ -219,6 +219,50 @@ app.put("/api/presenca/:id", async (req, res) => {
     res.json(registo);
   } catch (error) {
     res.status(500).json({ error: "Erro ao atualizar presença." });
+  }
+});
+
+// GET msai de um aluno
+app.get("/api/msai/:alunoId", async (req, res) => {
+  const { alunoId } = req.params;
+  try {
+    const msaiRecord = await prisma.MSAI.findFirst({
+      where: { alunoId }
+    });
+    res.json(msaiRecord || { msai: "000000000000000" });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar MSAI." });
+  }
+});
+
+// PUT atualizar msai de um aluno
+app.put("/api/msai/:alunoId", async (req, res) => {
+  const { alunoId } = req.params;
+  const { msai } = req.body;
+
+  if (!msai || msai.length !== 15) {
+    return res.status(400).json({ error: "MSAI inválido." });
+  }
+
+  try {
+    const existing = await prisma.MSAI.findFirst({
+      where: { alunoId }
+    });
+
+    let record;
+    if (existing) {
+      record = await prisma.MSAI.update({
+        where: { id: existing.id },
+        data: { msai }
+      });
+    } else {
+      record = await prisma.MSAI.create({
+        data: { alunoId, msai }
+      });
+    }
+    res.json(record);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao atualizar MSAI." });
   }
 });
 

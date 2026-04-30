@@ -11,7 +11,6 @@ export default function AdicionarAluno() {
     const [form, setForm] = useState({
         nome: '',
         turma: '',
-        email: '',
         notas: '',
         foto: '',
     });
@@ -76,7 +75,7 @@ export default function AdicionarAluno() {
             }
 
             setSuccess(`✅ Aluno "${data.nome}" adicionado com sucesso!`);
-            setForm({ nome: '', turma: '', email: '', notas: '', foto: '' });
+            setForm({ nome: '', turma: '', notas: '', foto: '' });
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -102,19 +101,6 @@ export default function AdicionarAluno() {
                                 type="text"
                                 placeholder="Ex: João Silva"
                                 value={form.nome}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="email">Email</label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="Ex: joao@escola.pt"
-                                value={form.email}
                                 onChange={handleChange}
                                 required
                             />
