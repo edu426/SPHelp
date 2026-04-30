@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import './ExcelTest.css';
 import IsLoggedIn from '../../functions/IsLoggedIn';
-
+import { useUser } from '@clerk/clerk-react';
 interface Student {
     id: string;
     nome: string;
@@ -14,30 +14,42 @@ interface Student {
 }
 
 export default function ExcelTest() {
+    const { user } = useUser();
     const [students, setStudents] = useState<Student[]>([]);
+    const [professorId, setProfessorId] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
+    useEffect(() => {
+        if (user) {
+            fetch("/api/sync", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clerkId: user.id }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log("Sincronizado com sucesso:", data);
+                    setProfessorId(data.id);
+                })
+                .catch((err) => {
+                    console.error("Erro ao sincronizar:", err);
+                });
+        }
+    }, [user]);
+
     // Fetch alunos do backend
     useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch('/api/alunos');
-                if (!response.ok) throw new Error('Failed to fetch students');
-                const data = await response.json();
-                setStudents(data);
-            } catch (err: any) {
-                setError('Could not connect to backend. Make sure it is running on port 3000.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStudents();
-    }, []);
-
+        if (!professorId) return;
+        console.log(professorId);
+        setLoading(true);
+        fetch(`/api/alunos/${professorId}`)
+            .then((res) => res.json())
+            .then((data) => setStudents(data))
+            .catch((err) => console.error("Erro ao buscar alunos:", err))
+            .finally(() => setLoading(false));
+    }, [professorId]);
     // Exportar todos os alunos para Excel
     const exportToExcel = () => {
         try {
