@@ -7,7 +7,6 @@ import { useUser } from '@clerk/clerk-react';
 interface Student {
     id: string;
     nome: string;
-    email: string;
     turma: string;
     notas: string;
     professorId: string;
@@ -139,10 +138,6 @@ export default function VerTodosAluno() {
                                     <span className="info-value">{student.nome}</span>
                                 </div>
 
-                                <div className="info-row">
-                                    <span className="info-label">Email</span>
-                                    <span className="info-value">{student.email}</span>
-                                </div>
 
                                 <div className="info-row">
                                     <span className="info-label">Turma</span>

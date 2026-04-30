@@ -7,7 +7,6 @@ import { useUser } from '@clerk/clerk-react';
 interface Student {
     id: string;
     nome: string;
-    email: string;
     turma: string;
     notas: string;
     professorId: string;
@@ -56,7 +55,6 @@ export default function ExcelTest() {
             const studentData = students.map(student => ({
                 'ID': student.id,
                 'Nome': student.nome,
-                'Email': student.email,
                 'Turma': student.turma,
                 'Notas': student.notas,
             }));
@@ -189,7 +187,6 @@ export default function ExcelTest() {
                             <tr>
                                 <th>ID</th>
                                 <th>Nome</th>
-                                <th>Email</th>
                                 <th>Turma</th>
                                 <th>Notas</th>
                                 <th>Ações</th>
@@ -200,7 +197,6 @@ export default function ExcelTest() {
                                 <tr key={student.id}>
                                     <td>{student.id}</td>
                                     <td>{student.nome}</td>
-                                    <td>{student.email}</td>
                                     <td>{student.turma}</td>
                                     <td>{student.notas}</td>
                                     <td>

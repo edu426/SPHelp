@@ -8,7 +8,6 @@ interface AlunoRecente {
     id: string;
     nome: string;
     turma: string;
-    email: string;
     foto?: string;
     updatedAt: string;
 }
