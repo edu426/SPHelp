@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import IsLoggedIn from '../../functions/IsLoggedIn';
 import './VerAluno.css';
 import { useUser } from '@clerk/clerk-react';
@@ -300,6 +300,7 @@ export default function EditarAluno() {
             {professorId == aluno.professorId ? (
                 <div className="ver-aluno-page">
                     <button onClick={() => navigate(-1)} className="btn-view">← Voltar</button>
+                    <Link to={`/exportar-aluno/${aluno.id}`} className="btn-view">Exportar</Link>
                     <div className="ver-aluno-header">
                         <div>
                             <h1>Ficha do Aluno</h1>

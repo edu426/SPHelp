@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import './ExcelTest.css';
 import IsLoggedIn from '../../functions/IsLoggedIn';
+import { useUser } from '@clerk/clerk-react';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,6 +62,8 @@ const formatDate = (iso: string) =>
 
 export default function ExportarAluno() {
     const { id } = useParams<{ id: string }>();
+    const { user } = useUser();
+    const [professorId, setProfessorId] = useState<string | null>(null);
     const navigate = useNavigate();
     // Data
     const [aluno, setAluno] = useState<Student | null>(null);
@@ -79,6 +82,25 @@ export default function ExportarAluno() {
     });
 
     // ── Fetch ─────────────────────────────────────────────────────────────────
+
+    useEffect(() => {
+        if (user) {
+            fetch("/api/sync", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ clerkId: user.id }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log("Sincronizado com sucesso:", data);
+                    setProfessorId(data.id);
+                })
+                .catch((err) => {
+                    console.error("Erro ao sincronizar:", err);
+                });
+        }
+    }, [user]);
+
 
     useEffect(() => {
         if (!id) return;
@@ -198,174 +220,182 @@ export default function ExportarAluno() {
 
     return (
         <IsLoggedIn>
-            <div className="container">
+            {professorId === aluno.professorId ? (
+                <div className="container">
 
-                {/* ── Header ── */}
-                <button onClick={() => navigate(-1)} className="btn-view" style={{ marginBottom: '1.5rem' }}>
-                    ← Voltar
-                </button>
-
-                <h1 className="title">Exportar Dados — {aluno.nome}</h1>
-                <p className="subtitle" style={{ fontSize: '1rem', color: '#777', marginTop: '-0.5rem' }}>
-                    Turma: <strong>{aluno.turma}</strong>
-                </p>
-
-                {/* ── Feedback ── */}
-                {message && (
-                    <div className={message.startsWith('Ficheiro') ? 'success-box' : 'error-box'}>
-                        {message}
-                    </div>
-                )}
-
-                {/* ── Section picker ── */}
-                <h2 className="subtitle" style={{ marginTop: '1.5rem' }}>Selecione as secções a exportar</h2>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
-
-                    {/* Dados Pessoais */}
-                    <label style={sectionLabelStyle(exportSections.dadosPessoais)}>
-                        <input
-                            type="checkbox"
-                            checked={exportSections.dadosPessoais}
-                            onChange={() => toggleSection('dadosPessoais')}
-                            style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
-                        />
-                        <div>
-                            <strong>Dados Pessoais</strong>
-                            <p style={sectionDescStyle}>Nome, turma, diretor de turma e diagnóstico.</p>
-                        </div>
-                    </label>
-
-                    {/* Presenças */}
-                    <label style={sectionLabelStyle(exportSections.presencas)}>
-                        <input
-                            type="checkbox"
-                            checked={exportSections.presencas}
-                            onChange={() => toggleSection('presencas')}
-                            style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
-                        />
-                        <div>
-                            <strong>Presenças</strong>
-                            <p style={sectionDescStyle}>
-                                {presencas.length === 0
-                                    ? 'Sem registos.'
-                                    : `${presencas.length} registo(s) — ${totalPresentes} presente(s), ${totalFaltas} falta(s).`}
-                            </p>
-                        </div>
-                    </label>
-
-                    {/* MSAI */}
-                    <label style={sectionLabelStyle(exportSections.msai)}>
-                        <input
-                            type="checkbox"
-                            checked={exportSections.msai}
-                            onChange={() => toggleSection('msai')}
-                            style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
-                        />
-                        <div>
-                            <strong>Medidas de Suporte (MSAI)</strong>
-                            <p style={sectionDescStyle}>
-                                {msaiAtivas === 0
-                                    ? 'Nenhuma medida ativa.'
-                                    : `${msaiAtivas} medida(s) ativa(s).`}
-                            </p>
-                        </div>
-                    </label>
-                </div>
-
-                {/* ── Export button ── */}
-                <div className="button-group">
-                    <button onClick={handleExport} className="btn btn-green">
-                        Exportar para Excel
+                    {/* ── Header ── */}
+                    <button onClick={() => navigate(-1)} className="btn-view" style={{ marginBottom: '1.5rem' }}>
+                        ← Voltar
                     </button>
-                </div>
 
-                {/* ── Preview tables ── */}
+                    <h1 className="title">Exportar Dados — {aluno.nome}</h1>
+                    <p className="subtitle" style={{ fontSize: '1rem', color: '#777', marginTop: '-0.5rem' }}>
+                        Turma: <strong>{aluno.turma}</strong>
+                    </p>
 
-                {/* Dados Pessoais preview */}
-                {exportSections.dadosPessoais && (
-                    <>
-                        <h2 className="subtitle">Pré-visualização — Dados Pessoais</h2>
-                        <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
-                            <table className="student-table">
-                                <thead>
-                                    <tr>
-                                        <th>Campo</th>
-                                        <th>Valor</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="row-even"><td>Nome</td><td>{aluno.nome}</td></tr>
-                                    <tr className="row-odd"><td>Turma</td><td>{aluno.turma}</td></tr>
-                                    <tr className="row-even"><td>Diretor de Turma</td><td>{aluno.diretorTurma || 'N/A'}</td></tr>
-                                    <tr className="row-odd"><td>Diagnóstico / Notas</td><td>{aluno.notas || '—'}</td></tr>
-                                </tbody>
-                            </table>
+                    {/* ── Feedback ── */}
+                    {message && (
+                        <div className={message.startsWith('Ficheiro') ? 'success-box' : 'error-box'}>
+                            {message}
                         </div>
-                    </>
-                )}
+                    )}
 
-                {/* Presenças preview */}
-                {exportSections.presencas && (
-                    <>
-                        <h2 className="subtitle">Pré-visualização — Presenças</h2>
-                        <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
-                            {presencas.length === 0 ? (
-                                <p className="no-results">Sem registos de presença.</p>
-                            ) : (
+                    {/* ── Section picker ── */}
+                    <h2 className="subtitle" style={{ marginTop: '1.5rem' }}>Selecione as secções a exportar</h2>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
+
+                        {/* Dados Pessoais */}
+                        <label style={sectionLabelStyle(exportSections.dadosPessoais)}>
+                            <input
+                                type="checkbox"
+                                checked={exportSections.dadosPessoais}
+                                onChange={() => toggleSection('dadosPessoais')}
+                                style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+                            />
+                            <div>
+                                <strong>Dados Pessoais</strong>
+                                <p style={sectionDescStyle}>Nome, turma, diretor de turma e diagnóstico.</p>
+                            </div>
+                        </label>
+
+                        {/* Presenças */}
+                        <label style={sectionLabelStyle(exportSections.presencas)}>
+                            <input
+                                type="checkbox"
+                                checked={exportSections.presencas}
+                                onChange={() => toggleSection('presencas')}
+                                style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+                            />
+                            <div>
+                                <strong>Presenças</strong>
+                                <p style={sectionDescStyle}>
+                                    {presencas.length === 0
+                                        ? 'Sem registos.'
+                                        : `${presencas.length} registo(s) — ${totalPresentes} presente(s), ${totalFaltas} falta(s).`}
+                                </p>
+                            </div>
+                        </label>
+
+                        {/* MSAI */}
+                        <label style={sectionLabelStyle(exportSections.msai)}>
+                            <input
+                                type="checkbox"
+                                checked={exportSections.msai}
+                                onChange={() => toggleSection('msai')}
+                                style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+                            />
+                            <div>
+                                <strong>Medidas de Suporte (MSAI)</strong>
+                                <p style={sectionDescStyle}>
+                                    {msaiAtivas === 0
+                                        ? 'Nenhuma medida ativa.'
+                                        : `${msaiAtivas} medida(s) ativa(s).`}
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+
+                    {/* ── Export button ── */}
+                    <div className="button-group">
+                        <button onClick={handleExport} className="btn btn-green">
+                            Exportar para Excel
+                        </button>
+                    </div>
+
+                    {/* ── Preview tables ── */}
+
+                    {/* Dados Pessoais preview */}
+                    {exportSections.dadosPessoais && (
+                        <>
+                            <h2 className="subtitle">Pré-visualização — Dados Pessoais</h2>
+                            <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
                                 <table className="student-table">
                                     <thead>
                                         <tr>
-                                            <th>Data</th>
-                                            <th>Estado</th>
-                                            <th>Justificada</th>
+                                            <th>Campo</th>
+                                            <th>Valor</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {presencas.map((p, i) => (
-                                            <tr key={p.id} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
-                                                <td>{formatDate(p.data)}</td>
-                                                <td>{p.presente ? 'Presente' : 'Falta'}</td>
-                                                <td>{!p.presente ? (p.justifica ? 'Sim' : 'Não') : '—'}</td>
-                                            </tr>
-                                        ))}
+                                        <tr className="row-even"><td>Nome</td><td>{aluno.nome}</td></tr>
+                                        <tr className="row-odd"><td>Turma</td><td>{aluno.turma}</td></tr>
+                                        <tr className="row-even"><td>Diretor de Turma</td><td>{aluno.diretorTurma || 'N/A'}</td></tr>
+                                        <tr className="row-odd"><td>Diagnóstico / Notas</td><td>{aluno.notas || '—'}</td></tr>
                                     </tbody>
                                 </table>
-                            )}
-                        </div>
-                    </>
-                )}
+                            </div>
+                        </>
+                    )}
 
-                {/* MSAI preview */}
-                {exportSections.msai && (
-                    <>
-                        <h2 className="subtitle">Pré-visualização — MSAI</h2>
-                        <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
-                            <table className="student-table">
-                                <thead>
-                                    <tr>
-                                        <th>Categoria</th>
-                                        <th>Medida</th>
-                                        <th>Ativa</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {MSAI_CATEGORIES.flatMap(cat =>
-                                        cat.indices.map((idx, j) => (
-                                            <tr key={idx} className={j % 2 === 0 ? 'row-even' : 'row-odd'}>
-                                                <td>{cat.label}</td>
-                                                <td>{MSAI_LABELS[idx]}</td>
-                                                <td>{msai[idx] === '1' ? 'Sim' : '—'}</td>
+                    {/* Presenças preview */}
+                    {exportSections.presencas && (
+                        <>
+                            <h2 className="subtitle">Pré-visualização — Presenças</h2>
+                            <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
+                                {presencas.length === 0 ? (
+                                    <p className="no-results">Sem registos de presença.</p>
+                                ) : (
+                                    <table className="student-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Estado</th>
+                                                <th>Justificada</th>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </>
-                )}
+                                        </thead>
+                                        <tbody>
+                                            {presencas.map((p, i) => (
+                                                <tr key={p.id} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
+                                                    <td>{formatDate(p.data)}</td>
+                                                    <td>{p.presente ? 'Presente' : 'Falta'}</td>
+                                                    <td>{!p.presente ? (p.justifica ? 'Sim' : 'Não') : '—'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </>
+                    )}
 
-            </div>
+                    {/* MSAI preview */}
+                    {exportSections.msai && (
+                        <>
+                            <h2 className="subtitle">Pré-visualização — MSAI</h2>
+                            <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
+                                <table className="student-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Medida</th>
+                                            <th>Ativa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {MSAI_CATEGORIES.flatMap(cat =>
+                                            cat.indices.map((idx, j) => (
+                                                <tr key={idx} className={j % 2 === 0 ? 'row-even' : 'row-odd'}>
+                                                    <td>{cat.label}</td>
+                                                    <td>{MSAI_LABELS[idx]}</td>
+                                                    <td>{msai[idx] === '1' ? 'Sim' : '—'}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+
+                </div>
+            ) : (
+                <div className="container">
+                    <h1>Acesso Negado</h1>
+                    <p>Você não tem permissão para acessar esta página.</p>
+                </div>
+            )
+            }
         </IsLoggedIn>
     );
 }
