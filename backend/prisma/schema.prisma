@@ -28,6 +28,12 @@ model Alunos {
 
   MSAI MSAI[]
 }
+model Atividades{
+  id        String   @id @default(cuid())
+  resumo    String
+  concluida Boolean  
+  presencas Presenca[]
+}
 
 model MSAI {
   id      String @id @default(cuid())
@@ -36,14 +42,17 @@ model MSAI {
   aluno   Alunos @relation(fields: [alunoId], references: [id])
 }
 
-model Presenca {
+model Presenca { //vai deixar de ser so para presenças e vai passar a ser para aulas/apoio
   id        String   @id @default(cuid())
   alunoId   String
+  atividadeId String?
   data      DateTime @default(now())
+  sumario   String   @default("N/A")
   presente  Boolean
   justifica Boolean
   justificacao String? 
   aluno     Alunos   @relation(fields: [alunoId], references: [id])
+  atividade Atividades? @relation(fields: [atividadeId], references: [id])
 }
 
 //professorId deve ser irrelevante (substituido pela string diretorTurma)
