@@ -60,12 +60,18 @@ app.post("/api/alunos", async (req, res) => {
   }
 });
 
-// POST registar nova presença
+// POST registar nova presença ou sessão de aula/apoio
 app.post("/api/presenca", async (req, res) => {
-  const { alunoId, presente, justifica, justificacao, data } = req.body;
+  const { alunoId, presente, justifica, justificacao, data, sumario, atividades } = req.body;
 
-  if (!alunoId || presente == null || justifica == null) {
-    return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+  if (!alunoId || presente == null) {
+    return res.status(400).json({ error: "alunoId e presente são obrigatórios." });
+  }
+
+  // justifica obrigatório apenas quando não é sessão de apoio
+  const isSession = sumario && sumario.trim();
+  if (!isSession && justifica == null) {
+    return res.status(400).json({ error: "Campo 'justifica' é obrigatório para registos de presença." });
   }
 
   // Exige justificação textual quando a falta é marcada como justificada
@@ -78,13 +84,17 @@ app.post("/api/presenca", async (req, res) => {
       data: {
         alunoId,
         presente,
-        justifica,
+        justifica: justifica ?? false,
         justificacao: justifica && justificacao ? justificacao.trim() : null,
         ...(data ? { data: new Date(data) } : {}),
+        ...(isSession ? { sumario: sumario.trim() } : {}),
+        ...(atividades && atividades.length > 0 ? { atividades: { create: atividades } } : {}),
       },
+      include: { atividades: true },
     });
     res.status(201).json(registo);
   } catch (error) {
+    console.error("Erro ao registar presença:", error);
     res.status(500).json({ error: "Erro ao registar presença." });
   }
 });
@@ -194,13 +204,14 @@ app.get("/", (req, res) => {
   res.send("Servidor do SPHelp ativo");
 });
 
-// GET todas as presenças de um aluno
+// GET todas as presenças de um aluno (inclui atividade ligada)
 app.get("/api/presenca/:alunoId", async (req, res) => {
   const { alunoId } = req.params;
   try {
     const registos = await prisma.Presenca.findMany({
       where: { alunoId },
       orderBy: { data: "desc" }, // Mais recentes primeiro
+      include: { atividades: true },
     });
     res.json(registos);
   } catch (error) {
@@ -208,13 +219,14 @@ app.get("/api/presenca/:alunoId", async (req, res) => {
   }
 });
 
-// PUT atualizar uma presença (ex: marcar como justificada)
+// PUT atualizar uma presença (ex: marcar como justificada, atualizar sumário, ou ligar atividade)
 app.put("/api/presenca/:id", async (req, res) => {
   const { id } = req.params;
-  const { justifica, justificacao } = req.body;
+  const { justifica, justificacao, sumario } = req.body;
 
-  if (justifica == null) {
-    return res.status(400).json({ error: "Campo 'justifica' é obrigatório." });
+  // At least one updatable field required
+  if (justifica == null && sumario == null) {
+    return res.status(400).json({ error: "Nenhum campo para atualizar." });
   }
 
   // Exige justificação textual quando se marca como justificada
@@ -223,16 +235,78 @@ app.put("/api/presenca/:id", async (req, res) => {
   }
 
   try {
+    const updateData = {};
+    if (justifica != null) {
+      updateData.justifica = justifica;
+      updateData.justificacao = justifica && justificacao ? justificacao.trim() : null;
+    }
+    if (sumario != null) {
+      updateData.sumario = sumario.trim();
+    }
+
     const registo = await prisma.Presenca.update({
       where: { id },
-      data: {
-        justifica,
-        justificacao: justifica && justificacao ? justificacao.trim() : null,
-      },
+      data: updateData,
+      include: { atividades: true },
     });
     res.json(registo);
   } catch (error) {
     res.status(500).json({ error: "Erro ao atualizar presença." });
+  }
+});
+
+//-------------Atividades-------------
+// POST criar nova atividade
+app.post("/api/atividades", async (req, res) => {
+  const { resumo, concluida, presencaId } = req.body;
+  if (!resumo || !resumo.trim()) {
+    return res.status(400).json({ error: "O resumo da atividade é obrigatório." });
+  }
+  try {
+    const atividade = await prisma.Atividades.create({
+      data: {
+        resumo: resumo.trim(),
+        concluida: concluida ?? false,
+        ...(presencaId ? { presencaId } : {})
+      },
+    });
+    res.status(201).json(atividade);
+  } catch (error) {
+    console.error("Erro ao criar atividade:", error);
+    res.status(500).json({ error: "Erro ao criar atividade." });
+  }
+});
+
+// GET uma atividade pelo ID
+app.get("/api/atividades/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const atividade = await prisma.Atividades.findUnique({ where: { id } });
+    if (!atividade) return res.status(404).json({ error: "Atividade não encontrada." });
+    res.json(atividade);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar atividade." });
+  }
+});
+
+// PUT atualizar uma atividade
+app.put("/api/atividades/:id", async (req, res) => {
+  const { id } = req.params;
+  const { resumo, concluida } = req.body;
+  if (!resumo || !resumo.trim()) {
+    return res.status(400).json({ error: "O resumo da atividade é obrigatório." });
+  }
+  try {
+    const atividade = await prisma.Atividades.update({
+      where: { id },
+      data: {
+        resumo: resumo.trim(),
+        concluida: concluida ?? false,
+      },
+    });
+    res.json(atividade);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao atualizar atividade." });
   }
 });
 

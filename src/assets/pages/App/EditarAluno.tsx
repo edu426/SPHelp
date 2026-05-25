@@ -14,7 +14,14 @@ interface Student {
     foto?: string;
 }
 
-// Objeto que representa a presença
+// Objeto que representa uma atividade
+interface Atividade {
+    id: string;
+    resumo: string;
+    concluida: boolean;
+}
+
+// Objeto que representa a presença (inclui sessões de aula/apoio)
 interface Presenca {
     id: string;
     alunoId: string;
@@ -22,6 +29,8 @@ interface Presenca {
     presente: boolean;  // true = presente, false = falta
     justifica: boolean;
     justificacao?: string | null;
+    sumario?: string | null;        // preenchido em sessões de aula/apoio
+    atividades?: Atividade[];       // relacão incluída pelo backend
 }
 
 export default function EditarAluno() {
@@ -56,18 +65,34 @@ export default function EditarAluno() {
     const [presencas, setPresencas] = useState<Presenca[]>([]);
     const [loadingFaltas, setLoadingFaltas] = useState(true);
 
-    // Visibilidade do formulário de adicionar falta
-    const [showFaltaForm, setShowFaltaForm] = useState(false);
+    // ── Aulas (unified) state ──
+    const [showAulaForm, setShowAulaForm] = useState(false);
+    const [novaAula, setNovaAula] = useState({
+        data: '',
+        sumario: '',
+        presente: true,
+        justifica: false,
+        justificacao: '',
+        addAtividade: false,
+        resumoAtividade: '',
+        concluida: false,
+    });
+    const [addingAula, setAddingAula] = useState(false);
+    const [aulaMessage, setAulaMessage] = useState('');
 
-    // Valores para a nova falta que está a ser registada
-    const [novaFalta, setNovaFalta] = useState({ presente: false, justifica: false, justificacao: '', data: '' });
-    const [addingFalta, setAddingFalta] = useState(false);
-    const [faltaMessage, setFaltaMessage] = useState('');
-
-    // ID da falta que está a ser editada inline (para justificar)
+    // Justification inline edit
     const [editingFaltaId, setEditingFaltaId] = useState<string | null>(null);
-    // Texto de justificação para o editor inline
     const [editingJustificacao, setEditingJustificacao] = useState('');
+
+    // Activity inline edit
+    const [editingAtividadeId, setEditingAtividadeId] = useState<string | null>(null);
+    const [editingAtividade, setEditingAtividade] = useState({ resumo: '', concluida: false });
+    const [savingAtividade, setSavingAtividade] = useState(false);
+
+    // Add-activity inline form (per card)
+    const [addingAtividadeForId, setAddingAtividadeForId] = useState<string | null>(null);
+    const [newAtividade, setNewAtividade] = useState({ resumo: '', concluida: false });
+    const [savingNewAtividade, setSavingNewAtividade] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -202,45 +227,6 @@ export default function EditarAluno() {
         setIsEditing(false);
     };
 
-    // Envia uma nova presença para o POST /api/presenca
-    const handleAddFalta = async () => {
-        if (!novaFalta.presente && novaFalta.justifica && !novaFalta.justificacao.trim()) {
-            setFaltaMessage('❌ Por favor, preencha a justificação.');
-            return;
-        }
-        setAddingFalta(true);
-        setFaltaMessage('');
-        try {
-            const response = await fetch('/api/presenca', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    alunoId: id,
-                    presente: novaFalta.presente,
-                    justifica: novaFalta.justifica,
-                    justificacao: novaFalta.justifica ? novaFalta.justificacao : undefined,
-                    data: novaFalta.data || undefined
-                }),
-            });
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.error || 'Erro ao registar.');
-            }
-            const novo = await response.json();
-
-            // Adiciona a nova presença ao topo da lista
-            setPresencas([novo, ...presencas]);
-            setShowFaltaForm(false);
-            setNovaFalta({ presente: false, justifica: false, justificacao: '', data: '' });
-            setFaltaMessage('✅ Falta registada com sucesso!');
-            setTimeout(() => setFaltaMessage(''), 3000);
-        } catch (err: any) {
-            setFaltaMessage('❌ ' + (err.message || 'Erro ao registar falta.'));
-        } finally {
-            setAddingFalta(false);
-        }
-    };
-
     // Formats ISO date to DD/MM/YYYY
     const formatDate = (iso: string) =>
         new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -248,7 +234,7 @@ export default function EditarAluno() {
     // Envia um PUT para atualizar os campos `justifica` e `justificacao` de uma presença
     const handleJustificar = async (presencaId: string, novoValor: boolean) => {
         if (novoValor && !editingJustificacao.trim()) {
-            setFaltaMessage('❌ Por favor, preencha a justificação.');
+            setAulaMessage('❌ Por favor, preencha a justificação.');
             return;
         }
         try {
@@ -269,10 +255,10 @@ export default function EditarAluno() {
             setPresencas(prev => prev.map(p => p.id === presencaId ? updated : p));
             setEditingFaltaId(null);
             setEditingJustificacao('');
-            setFaltaMessage('✅ Presença atualizada com sucesso!');
-            setTimeout(() => setFaltaMessage(''), 3000);
+            setAulaMessage('✅ Presença atualizada com sucesso!');
+            setTimeout(() => setAulaMessage(''), 3000);
         } catch (err: any) {
-            setFaltaMessage('❌ ' + (err.message || 'Erro ao atualizar presença.'));
+            setAulaMessage('❌ ' + (err.message || 'Erro ao atualizar presença.'));
         }
     };
 
@@ -283,7 +269,125 @@ export default function EditarAluno() {
         return now.toISOString().slice(0, 16);
     };
 
-    // Conta o total de faltas para o resumo
+    // Registar nova aula (unified: sempre tem sumário + data + presente)
+    const handleAddAula = async () => {
+        if (!novaAula.sumario.trim()) {
+            setAulaMessage('❌ Por favor, preencha o sumário da aula.');
+            return;
+        }
+        if (!novaAula.presente && novaAula.justifica && !novaAula.justificacao.trim()) {
+            setAulaMessage('❌ Por favor, preencha a justificação da falta.');
+            return;
+        }
+        if (novaAula.addAtividade && !novaAula.resumoAtividade.trim()) {
+            setAulaMessage('❌ Por favor, preencha o resumo da atividade.');
+            return;
+        }
+        setAddingAula(true);
+        setAulaMessage('');
+        try {
+            let atividades = undefined;
+            if (novaAula.addAtividade && novaAula.resumoAtividade.trim()) {
+                atividades = [{ resumo: novaAula.resumoAtividade.trim(), concluida: novaAula.concluida }];
+            }
+
+            const presRes = await fetch('/api/presenca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    alunoId: id,
+                    presente: novaAula.presente,
+                    justifica: novaAula.presente ? false : novaAula.justifica,
+                    justificacao: (!novaAula.presente && novaAula.justifica) ? novaAula.justificacao.trim() : undefined,
+                    sumario: novaAula.sumario.trim(),
+                    data: novaAula.data || undefined,
+                    atividades,
+                }),
+            });
+            if (!presRes.ok) {
+                const errData = await presRes.json();
+                throw new Error(errData.error || 'Erro ao registar aula.');
+            }
+            const nova = await presRes.json();
+            setPresencas(prev => [nova, ...prev]);
+            setShowAulaForm(false);
+            setNovaAula({ data: '', sumario: '', presente: true, justifica: false, justificacao: '', addAtividade: false, resumoAtividade: '', concluida: false });
+            setAulaMessage('✅ Aula registada com sucesso!');
+            setTimeout(() => setAulaMessage(''), 3000);
+        } catch (err: any) {
+            setAulaMessage('❌ ' + (err.message || 'Erro ao registar aula.'));
+        } finally {
+            setAddingAula(false);
+        }
+    };
+
+    // Guardar edição de atividade
+    const handleSaveAtividade = async () => {
+        if (!editingAtividadeId) return;
+        if (!editingAtividade.resumo.trim()) {
+            setAulaMessage('❌ O resumo da atividade não pode estar vazio.');
+            return;
+        }
+        setSavingAtividade(true);
+        try {
+            const res = await fetch(`/api/atividades/${editingAtividadeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resumo: editingAtividade.resumo.trim(), concluida: editingAtividade.concluida }),
+            });
+            if (!res.ok) throw new Error('Erro ao guardar atividade.');
+            const updated: Atividade = await res.json();
+            setPresencas(prev => prev.map(p => {
+                if (p.atividades && p.atividades.some(a => a.id === updated.id)) {
+                    return { ...p, atividades: p.atividades.map(a => a.id === updated.id ? updated : a) };
+                }
+                return p;
+            }));
+            setEditingAtividadeId(null);
+            setAulaMessage('✅ Atividade atualizada com sucesso!');
+            setTimeout(() => setAulaMessage(''), 3000);
+        } catch (err: any) {
+            setAulaMessage('❌ ' + (err.message || 'Erro ao atualizar atividade.'));
+        } finally {
+            setSavingAtividade(false);
+        }
+    };
+
+    // Adicionar nova atividade a uma aula já existente
+    const handleAddAtividadeToAula = async (presencaId: string) => {
+        if (!newAtividade.resumo.trim()) {
+            setAulaMessage('❌ Por favor, preencha o resumo da atividade.');
+            return;
+        }
+        setSavingNewAtividade(true);
+        try {
+            const atRes = await fetch('/api/atividades', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resumo: newAtividade.resumo.trim(), concluida: newAtividade.concluida, presencaId }),
+            });
+            if (!atRes.ok) throw new Error('Erro ao criar atividade.');
+            const atData: Atividade = await atRes.json();
+
+            setPresencas(prev => prev.map(p => {
+                if (p.id === presencaId) {
+                    return { ...p, atividades: [...(p.atividades || []), atData] };
+                }
+                return p;
+            }));
+            setAddingAtividadeForId(null);
+            setNewAtividade({ resumo: '', concluida: false });
+            setAulaMessage('✅ Atividade adicionada com sucesso!');
+            setTimeout(() => setAulaMessage(''), 3000);
+        } catch (err: any) {
+            setAulaMessage('❌ ' + (err.message || 'Erro ao adicionar atividade.'));
+        } finally {
+            setSavingNewAtividade(false);
+        }
+    };
+
+    // Counts
+    const totalAulas = presencas.length;
     const totalFaltas = presencas.filter(p => !p.presente).length;
 
     // Mensagem de loading enquanto o fetch está em progresso
@@ -375,186 +479,8 @@ export default function EditarAluno() {
                                     }
                                 </div>
                             </div>
-
-                            {/* ── Secção de Presenças ── */}
-                            <div className="faltas-section">
-                                <div className="faltas-header">
-                                    <div>
-                                        <h2>Presenças</h2>
-                                        {!loadingFaltas && (
-                                            <p className="faltas-summary">
-                                                {totalFaltas === 0
-                                                    ? 'Sem faltas registadas.'
-                                                    : `${totalFaltas} falta${totalFaltas > 1 ? 's' : ''} registada${totalFaltas > 1 ? 's' : ''}`}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Mensagem de feedback após adicionar uma presença */}
-                                {faltaMessage && (
-                                    <div className={faltaMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
-                                        {faltaMessage}
-                                    </div>
-                                )}
-
-                                {/* Lista de presenças */}
-                                {loadingFaltas ? (
-                                    <p className="faltas-loading">A carregar faltas...</p>
-                                ) : presencas.length === 0 ? (
-                                    <p className="faltas-empty">Nenhum registo encontrado.</p>
-                                ) : (
-                                    <div className="faltas-list">
-                                        <div className="falta-row falta-row-header">
-                                            <span>Data</span>
-                                            <span>Estado</span>
-                                            <span>Justificada</span>
-                                            <span></span>
-                                        </div>
-                                        {presencas.map((p) => (
-                                            <div key={p.id} className={`falta-row ${!p.presente && !p.justifica ? 'falta-row-absent' : ''}`} style={{ gridTemplateColumns: '1fr 1fr 1fr auto' }}>
-                                                <span>{formatDate(p.data)}</span>
-                                                <span className={p.presente ? 'badge-presente' : 'badge-falta'}>
-                                                    {p.presente ? '✅ Presente' : '❌ Falta'}
-                                                </span>
-                                                <span>
-                                                    {!p.presente ? (
-                                                        p.justifica ? (
-                                                            <span title={p.justificacao || ''}>
-                                                                Sim {p.justificacao && <em style={{ fontSize: '0.8em', color: 'var(--text-muted, #aaa)' }}>— {p.justificacao.length > 30 ? p.justificacao.slice(0, 30) + '...' : p.justificacao}</em>}
-                                                            </span>
-                                                        ) : 'Não'
-                                                    ) : '—'}
-                                                </span>
-
-                                                {/* Botão de edição — só aparece em faltas (não em presenças) */}
-                                                <span>
-                                                    {!p.presente && editingFaltaId !== p.id && (
-                                                        <button
-                                                            className="btn-edit-falta"
-                                                            onClick={() => { setEditingFaltaId(p.id); setEditingJustificacao(p.justificacao || ''); }}
-                                                            title="Editar justificação"
-                                                        >
-                                                            ✏️
-                                                        </button>
-                                                    )}
-                                                    {!p.presente && editingFaltaId === p.id && (
-                                                        <div className="falta-inline-edit" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem' }}>
-                                                            <textarea
-                                                                className="edit-input"
-                                                                placeholder="Motivo da justificação *"
-                                                                value={editingJustificacao}
-                                                                onChange={e => setEditingJustificacao(e.target.value)}
-                                                                rows={2}
-                                                                style={{ fontSize: '0.8rem', width: '100%', minWidth: '200px', resize: 'vertical' }}
-                                                            />
-                                                            <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                                                <button
-                                                                    className="toggle-btn toggle-active"
-                                                                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
-                                                                    onClick={() => handleJustificar(p.id, true)}
-                                                                >
-                                                                    Justificar ✓
-                                                                </button>
-                                                                {p.justifica && (
-                                                                    <button
-                                                                        className="btn-cancel"
-                                                                        style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
-                                                                        onClick={() => handleJustificar(p.id, false)}
-                                                                    >
-                                                                        Remover
-                                                                    </button>
-                                                                )}
-                                                                <button
-                                                                    className="btn-cancel"
-                                                                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
-                                                                    onClick={() => { setEditingFaltaId(null); setEditingJustificacao(''); }}
-                                                                >
-                                                                    Cancelar
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Formulário para registar uma nova presença */}
-                                {showFaltaForm && (
-                                    <div className="falta-form">
-                                        <p className="falta-form-title">Registar nova presença</p>
-
-                                        {/* Date and time picker */}
-                                        <div className="form-group">
-                                            <label className="info-label">Data e Hora (opcional)</label>
-                                            <input
-                                                type="datetime-local"
-                                                className="edit-input"
-                                                value={novaFalta.data}
-                                                max={getCurrentDateTimeLocal()}
-                                                onChange={e => setNovaFalta({ ...novaFalta, data: e.target.value })}
-                                            />
-                                        </div>
-
-                                        <div className="falta-toggle">
-                                            <button
-                                                className={`toggle-btn ${novaFalta.presente ? 'toggle-active' : ''}`}
-                                                onClick={() => setNovaFalta({ ...novaFalta, presente: true, justifica: false, justificacao: '' })}
-                                            >
-                                                ✅ Presente
-                                            </button>
-                                            <button
-                                                className={`toggle-btn ${!novaFalta.presente ? 'toggle-active' : ''}`}
-                                                onClick={() => setNovaFalta({ ...novaFalta, presente: false })}
-                                            >
-                                                ❌ Falta
-                                            </button>
-                                        </div>
-
-                                        {/* Checkbox "Justificada" + campo de justificação */}
-                                        {!novaFalta.presente && (
-                                            <>
-                                                <label className="falta-check-label">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={novaFalta.justifica}
-                                                        onChange={e => setNovaFalta({ ...novaFalta, justifica: e.target.checked, justificacao: '' })}
-                                                    />
-                                                    Falta justificada
-                                                </label>
-                                                {novaFalta.justifica && (
-                                                    <div className="form-group">
-                                                        <label className="info-label">Motivo da justificação <span style={{ color: '#e55' }}>*</span></label>
-                                                        <textarea
-                                                            className="edit-input edit-textarea"
-                                                            placeholder="Descreva o motivo da falta..."
-                                                            value={novaFalta.justificacao}
-                                                            onChange={e => setNovaFalta({ ...novaFalta, justificacao: e.target.value })}
-                                                            rows={3}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-
-                                        <div className="falta-form-actions">
-                                            <button className="btn-save" onClick={handleAddFalta} disabled={addingFalta}>
-                                                {addingFalta ? 'A registar...' : 'Confirmar'}
-                                            </button>
-                                            <button className="btn-cancel" onClick={() => setShowFaltaForm(false)}>Cancelar</button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {!showFaltaForm && (
-                                    <button className="btn-add-falta" onClick={() => setShowFaltaForm(true)}>
-                                        + Registar Presença
-                                    </button>
-                                )}
-                            </div>
                         </div>
+
                         <div className="aluno-column-right">
                             {/* ── Secção de MSAI ── */}
                             <div className="msai-section">
@@ -588,10 +514,297 @@ export default function EditarAluno() {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-                </div>) : (
+
+                    {/* ── Secção Aulas (unificada) ── */}
+                    <div className="aulas-full-width-container">
+                        <div className="aulas-section">
+                                            <div className="faltas-header">
+                                                <div>
+                                                    <h2>Aulas / Apoio</h2>
+                                                    {!loadingFaltas && (
+                                                        <p className="faltas-summary">
+                                                            {totalAulas === 0
+                                                                ? 'Nenhuma aula registada.'
+                                                                : `${totalAulas} aula${totalAulas > 1 ? 's' : ''} · ${totalFaltas} falta${totalFaltas !== 1 ? 's' : ''}`}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Mensagem de feedback */}
+                                            {aulaMessage && (
+                                                <div className={aulaMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
+                                                    {aulaMessage}
+                                                </div>
+                                            )}
+
+                                            {/* Lista de aulas */}
+                                            {loadingFaltas ? (
+                                                <p className="faltas-loading">A carregar aulas...</p>
+                                            ) : (
+                                                <div className="aulas-list">
+                                                    {presencas.length === 0 && (
+                                                        <p className="faltas-empty">Nenhuma aula registada ainda.</p>
+                                                    )}
+                                                    {presencas.map(p => (
+                                                        <div key={p.id} className={`aula-card ${!p.presente && !p.justifica ? 'aula-card-absent' : ''}`}>
+
+                                                            {/* Header: data + badge de presença */}
+                                                            <div className="aula-card-header">
+                                                                <span className="aula-card-date">📅 {formatDate(p.data)}</span>
+                                                                <span className={p.presente ? 'badge-presente' : 'badge-falta'}>
+                                                                    {p.presente ? '✅ Presente' : '❌ Falta'}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Sumário */}
+                                                            {p.sumario && p.sumario !== 'N/A' && (
+                                                                <p className="aula-card-sumario">{p.sumario}</p>
+                                                            )}
+
+                                                            {/* Justificação (se falta) */}
+                                                            {!p.presente && (
+                                                                <div className="aula-card-justificacao">
+                                                                    {editingFaltaId === p.id ? (
+                                                                        <div className="atividade-edit-form">
+                                                                            <label className="info-label">Motivo da justificação</label>
+                                                                            <textarea
+                                                                                className="edit-input edit-textarea"
+                                                                                placeholder="Descreva o motivo da falta..."
+                                                                                value={editingJustificacao}
+                                                                                onChange={e => setEditingJustificacao(e.target.value)}
+                                                                                rows={2}
+                                                                            />
+                                                                            <div className="falta-form-actions" style={{ marginTop: '0.4rem' }}>
+                                                                                <button className="btn-save" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => handleJustificar(p.id, true)}>Justificar ✓</button>
+                                                                                {p.justifica && (
+                                                                                    <button className="btn-cancel" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => handleJustificar(p.id, false)}>Remover</button>
+                                                                                )}
+                                                                                <button className="btn-cancel" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => { setEditingFaltaId(null); setEditingJustificacao(''); }}>Cancelar</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="justificacao-row">
+                                                                            {p.justifica ? (
+                                                                                <span className="justificacao-sim" title={p.justificacao || ''}>
+                                                                                    ✔️ Justificada {p.justificacao && <em>— {p.justificacao.length > 40 ? p.justificacao.slice(0, 40) + '...' : p.justificacao}</em>}
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="justificacao-nao">⚠️ Não justificada</span>
+                                                                            )}
+                                                                            <button
+                                                                                className="btn-edit-falta"
+                                                                                title="Editar justificação"
+                                                                                onClick={() => { setEditingFaltaId(p.id); setEditingJustificacao(p.justificacao || ''); }}
+                                                                            >
+                                                                                ✏️
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Atividades list */}
+                                                            {p.atividades && p.atividades.map(ativ => (
+                                                                editingAtividadeId === ativ.id ? (
+                                                                    <div key={ativ.id} className="atividade-edit-form">
+                                                                        <label className="info-label">Resumo da Atividade <span style={{ color: '#e55' }}>*</span></label>
+                                                                        <textarea
+                                                                            className="edit-input edit-textarea"
+                                                                            value={editingAtividade.resumo}
+                                                                            onChange={e => setEditingAtividade(prev => ({ ...prev, resumo: e.target.value }))}
+                                                                            rows={2}
+                                                                        />
+                                                                        <label className="falta-check-label" style={{ marginTop: '0.4rem' }}>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={editingAtividade.concluida}
+                                                                                onChange={e => setEditingAtividade(prev => ({ ...prev, concluida: e.target.checked }))}
+                                                                            />
+                                                                            Concluída
+                                                                        </label>
+                                                                        <div className="falta-form-actions" style={{ marginTop: '0.5rem' }}>
+                                                                            <button className="btn-save" onClick={handleSaveAtividade} disabled={savingAtividade}>
+                                                                                {savingAtividade ? 'A guardar...' : 'Guardar'}
+                                                                            </button>
+                                                                            <button className="btn-cancel" onClick={() => setEditingAtividadeId(null)}>Cancelar</button>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div key={ativ.id} className="atividade-badge" style={{ marginBottom: '0.5rem' }}>
+                                                                        <span className="atividade-badge-icon">{ativ.concluida ? '✅' : '⏳'}</span>
+                                                                        <span className="atividade-badge-text">{ativ.resumo}</span>
+                                                                        <button
+                                                                            className="btn-edit-falta"
+                                                                            title="Editar atividade"
+                                                                            onClick={() => {
+                                                                                setEditingAtividadeId(ativ.id);
+                                                                                setEditingAtividade({ resumo: ativ.resumo, concluida: ativ.concluida });
+                                                                            }}
+                                                                        >
+                                                                            ✏️
+                                                                        </button>
+                                                                    </div>
+                                                                )
+                                                            ))}
+
+                                                            {/* Form para adicionar nova atividade (múltiplas permitidas) */}
+                                                            {addingAtividadeForId === p.id ? (
+                                                                <div className="atividade-edit-form">
+                                                                    <label className="info-label">Resumo da Atividade <span style={{ color: '#e55' }}>*</span></label>
+                                                                    <textarea
+                                                                        className="edit-input edit-textarea"
+                                                                        placeholder="Descreva a atividade proposta..."
+                                                                        value={newAtividade.resumo}
+                                                                        onChange={e => setNewAtividade(prev => ({ ...prev, resumo: e.target.value }))}
+                                                                        rows={2}
+                                                                    />
+                                                                    <label className="falta-check-label" style={{ marginTop: '0.4rem' }}>
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={newAtividade.concluida}
+                                                                            onChange={e => setNewAtividade(prev => ({ ...prev, concluida: e.target.checked }))}
+                                                                        />
+                                                                        Já concluída
+                                                                    </label>
+                                                                    <div className="falta-form-actions" style={{ marginTop: '0.5rem' }}>
+                                                                        <button className="btn-save" onClick={() => handleAddAtividadeToAula(p.id)} disabled={savingNewAtividade}>
+                                                                            {savingNewAtividade ? 'A guardar...' : 'Guardar'}
+                                                                        </button>
+                                                                        <button className="btn-cancel" onClick={() => { setAddingAtividadeForId(null); setNewAtividade({ resumo: '', concluida: false }); }}>Cancelar</button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    className="btn-add-atividade"
+                                                                    onClick={() => { setAddingAtividadeForId(p.id); setNewAtividade({ resumo: '', concluida: false }); }}
+                                                                >
+                                                                    + Atividade
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Formulário para registar nova aula */}
+                                            {showAulaForm && (
+                                                <div className="aula-form">
+                                                    <p className="falta-form-title">Registar Nova Aula</p>
+
+                                                    <div className="form-group">
+                                                        <label className="info-label">Data e Hora (opcional)</label>
+                                                        <input
+                                                            type="datetime-local"
+                                                            className="edit-input"
+                                                            value={novaAula.data}
+                                                            max={getCurrentDateTimeLocal()}
+                                                            onChange={e => setNovaAula(prev => ({ ...prev, data: e.target.value }))}
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group">
+                                                        <label className="info-label">Sumário <span style={{ color: '#e55' }}>*</span></label>
+                                                        <textarea
+                                                            className="edit-input edit-textarea"
+                                                            placeholder="O que foi trabalhado nesta aula..."
+                                                            value={novaAula.sumario}
+                                                            onChange={e => setNovaAula(prev => ({ ...prev, sumario: e.target.value }))}
+                                                            rows={3}
+                                                        />
+                                                    </div>
+
+                                                    <div className="falta-toggle">
+                                                        <button
+                                                            className={`toggle-btn ${novaAula.presente ? 'toggle-active' : ''}`}
+                                                            onClick={() => setNovaAula(prev => ({ ...prev, presente: true, justifica: false, justificacao: '' }))}
+                                                        >
+                                                            ✅ Presente
+                                                        </button>
+                                                        <button
+                                                            className={`toggle-btn ${!novaAula.presente ? 'toggle-active' : ''}`}
+                                                            onClick={() => setNovaAula(prev => ({ ...prev, presente: false }))}
+                                                        >
+                                                            ❌ Falta
+                                                        </button>
+                                                    </div>
+
+                                                    {!novaAula.presente && (
+                                                        <>
+                                                            <label className="falta-check-label">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={novaAula.justifica}
+                                                                    onChange={e => setNovaAula(prev => ({ ...prev, justifica: e.target.checked, justificacao: '' }))}
+                                                                />
+                                                                Falta justificada
+                                                            </label>
+                                                            {novaAula.justifica && (
+                                                                <div className="form-group">
+                                                                    <label className="info-label">Motivo <span style={{ color: '#e55' }}>*</span></label>
+                                                                    <textarea
+                                                                        className="edit-input edit-textarea"
+                                                                        placeholder="Descreva o motivo da falta..."
+                                                                        value={novaAula.justificacao}
+                                                                        onChange={e => setNovaAula(prev => ({ ...prev, justificacao: e.target.value }))}
+                                                                        rows={2}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+
+                                                    <label className="falta-check-label">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={novaAula.addAtividade}
+                                                            onChange={e => setNovaAula(prev => ({ ...prev, addAtividade: e.target.checked, resumoAtividade: '', concluida: false }))}
+                                                        />
+                                                        Adicionar Atividade
+                                                    </label>
+
+                                                    {novaAula.addAtividade && (
+                                                        <>
+                                                            <div className="form-group">
+                                                                <label className="info-label">Resumo da Atividade <span style={{ color: '#e55' }}>*</span></label>
+                                                                <textarea
+                                                                    className="edit-input edit-textarea"
+                                                                    placeholder="Descreva a atividade proposta..."
+                                                                    value={novaAula.resumoAtividade}
+                                                                    onChange={e => setNovaAula(prev => ({ ...prev, resumoAtividade: e.target.value }))}
+                                                                    rows={2}
+                                                                />
+                                                            </div>
+                                                            <label className="falta-check-label">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={novaAula.concluida}
+                                                                    onChange={e => setNovaAula(prev => ({ ...prev, concluida: e.target.checked }))}
+                                                                />
+                                                                Atividade já concluída
+                                                            </label>
+                                                        </>
+                                                    )}
+
+                                                    <div className="falta-form-actions">
+                                                        <button className="btn-save" onClick={handleAddAula} disabled={addingAula}>
+                                                            {addingAula ? 'A registar...' : 'Confirmar'}
+                                                        </button>
+                                                        <button className="btn-cancel" onClick={() => setShowAulaForm(false)}>Cancelar</button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {!showAulaForm && (
+                                                <button className="btn-add-aula" onClick={() => setShowAulaForm(true)}>
+                                                    + Registar Aula
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>) : (
                 <div className="ver-aluno-page">
                     <button onClick={() => navigate(-1)} className="btn-view">← Voltar</button>
                     <div className="ver-aluno-header">
