@@ -66,7 +66,7 @@ export default function ExcelTest() {
             const date = new Date().toISOString().split('T')[0];
             const filename = `Alunos_${date}.xlsx`;
             XLSX.writeFile(wb, filename);
-            setMessage(`✅ Ficheiro Excel "${filename}" descarregado com sucesso!`);
+            setMessage(`Ficheiro Excel "${filename}" descarregado com sucesso!`);
             setTimeout(() => setMessage(''), 3000);
         } catch (error: any) {
             setMessage(`Error: ${error.message}`);
@@ -88,7 +88,7 @@ export default function ExcelTest() {
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Alunos_Resumo');
             XLSX.writeFile(wb, 'Alunos_Resumo.xlsx');
-            setMessage('✅ Ficheiro Excel "${filename}" descarregado com sucesso!');
+            setMessage('Ficheiro Excel "${filename}" descarregado com sucesso!');
             setTimeout(() => setMessage(''), 3000);
         } catch (error: any) {
             setMessage(`Error: ${error.message}`);
@@ -128,6 +128,7 @@ export default function ExcelTest() {
                 {/* Error message */}
                 {error && (
                     <div className="error-box">
+                        <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px' }}>error</span>
                         {error}
                     </div>
                 )}
@@ -135,6 +136,7 @@ export default function ExcelTest() {
                 {/* Status message */}
                 {message && (
                     <div className="success-box">
+                        <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px' }}>check_circle</span>
                         {message}
                     </div>
                 )}

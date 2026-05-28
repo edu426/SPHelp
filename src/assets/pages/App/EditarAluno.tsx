@@ -427,10 +427,13 @@ export default function EditarAluno() {
                     </div>
 
                     {saveMessage && (
-                        <div className={saveMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
-                            {saveMessage}
-                        </div>
-                    )}
+      <div className={saveMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
+          <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px' }}>
+              {saveMessage.startsWith('✅') ? 'check_circle' : 'error'}
+          </span>
+          {saveMessage.replace(/^[✅❌]\s*/, '')}
+      </div>
+  )}
 
                     {/* ── Layout em Duas Colunas ── */}
                     <div className="aluno-two-columns">
@@ -535,10 +538,13 @@ export default function EditarAluno() {
 
                                             {/* Mensagem de feedback */}
                                             {aulaMessage && (
-                                                <div className={aulaMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
-                                                    {aulaMessage}
-                                                </div>
-                                            )}
+      <div className={aulaMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
+          <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px' }}>
+              {aulaMessage.startsWith('✅') ? 'check_circle' : 'error'}
+          </span>
+          {aulaMessage.replace(/^[✅❌]\s*/, '')}
+      </div>
+  )}
 
                                             {/* Lista de aulas */}
                                             {loadingFaltas ? (
@@ -553,9 +559,9 @@ export default function EditarAluno() {
 
                                                             {/* Header: data + badge de presença */}
                                                             <div className="aula-card-header">
-                                                                <span className="aula-card-date">📅 {formatDate(p.data)}</span>
+                                                                <span className="aula-card-date"><span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px' }}>calendar_month</span> {formatDate(p.data)}</span>
                                                                 <span className={p.presente ? 'badge-presente' : 'badge-falta'}>
-                                                                    {p.presente ? '✅ Presente' : '❌ Falta'}
+                                                                    {p.presente ? <><span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#10b981' }}>check_circle</span>Presente</> : <><span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#ef4444' }}>cancel</span>Falta</>}
                                                                 </span>
                                                             </div>
 
@@ -578,7 +584,7 @@ export default function EditarAluno() {
                                                                                 rows={2}
                                                                             />
                                                                             <div className="falta-form-actions" style={{ marginTop: '0.4rem' }}>
-                                                                                <button className="btn-save" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => handleJustificar(p.id, true)}>Justificar ✓</button>
+                                                                                <button className="btn-save" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => handleJustificar(p.id, true)}>Justificar <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle', marginLeft: '4px' }}>check</span></button>
                                                                                 {p.justifica && (
                                                                                     <button className="btn-cancel" style={{ fontSize: '0.8rem', padding: '0.35rem 0.7rem' }} onClick={() => handleJustificar(p.id, false)}>Remover</button>
                                                                                 )}
@@ -589,17 +595,17 @@ export default function EditarAluno() {
                                                                         <div className="justificacao-row">
                                                                             {p.justifica ? (
                                                                                 <span className="justificacao-sim" title={p.justificacao || ''}>
-                                                                                    ✔️ Justificada {p.justificacao && <em>— {p.justificacao.length > 40 ? p.justificacao.slice(0, 40) + '...' : p.justificacao}</em>}
+                                                                                    <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#10b981' }}>check</span>Justificada {p.justificacao && <em>— {p.justificacao.length > 40 ? p.justificacao.slice(0, 40) + '...' : p.justificacao}</em>}
                                                                                 </span>
                                                                             ) : (
-                                                                                <span className="justificacao-nao">⚠️ Não justificada</span>
+                                                                                <span className="justificacao-nao"><span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#f59e0b' }}>warning</span>Não justificada</span>
                                                                             )}
                                                                             <button
                                                                                 className="btn-edit-falta"
                                                                                 title="Editar justificação"
                                                                                 onClick={() => { setEditingFaltaId(p.id); setEditingJustificacao(p.justificacao || ''); }}
                                                                             >
-                                                                                ✏️
+                                                                                <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>edit</span>
                                                                             </button>
                                                                         </div>
                                                                     )}
@@ -634,7 +640,7 @@ export default function EditarAluno() {
                                                                     </div>
                                                                 ) : (
                                                                     <div key={ativ.id} className="atividade-badge" style={{ marginBottom: '0.5rem' }}>
-                                                                        <span className="atividade-badge-icon">{ativ.concluida ? '✅' : '⏳'}</span>
+                                                                        <span className="atividade-badge-icon material-symbols-outlined" style={{ fontSize: '1.2rem', verticalAlign: 'middle', color: ativ.concluida ? '#10b981' : '#f59e0b' }}>{ativ.concluida ? 'check_circle' : 'hourglass_empty'}</span>
                                                                         <span className="atividade-badge-text">{ativ.resumo}</span>
                                                                         <button
                                                                             className="btn-edit-falta"
@@ -644,7 +650,7 @@ export default function EditarAluno() {
                                                                                 setEditingAtividade({ resumo: ativ.resumo, concluida: ativ.concluida });
                                                                             }}
                                                                         >
-                                                                            ✏️
+                                                                            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>edit</span>
                                                                         </button>
                                                                     </div>
                                                                 )
@@ -721,13 +727,13 @@ export default function EditarAluno() {
                                                             className={`toggle-btn ${novaAula.presente ? 'toggle-active' : ''}`}
                                                             onClick={() => setNovaAula(prev => ({ ...prev, presente: true, justifica: false, justificacao: '' }))}
                                                         >
-                                                            ✅ Presente
+                                                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#10b981' }}>check_circle</span>Presente
                                                         </button>
                                                         <button
                                                             className={`toggle-btn ${!novaAula.presente ? 'toggle-active' : ''}`}
                                                             onClick={() => setNovaAula(prev => ({ ...prev, presente: false }))}
                                                         >
-                                                            ❌ Falta
+                                                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#ef4444' }}>cancel</span>Falta
                                                         </button>
                                                     </div>
 

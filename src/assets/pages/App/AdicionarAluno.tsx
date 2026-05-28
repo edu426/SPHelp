@@ -74,7 +74,7 @@ export default function AdicionarAluno() {
                 throw new Error(data.error || 'Erro ao adicionar aluno.');
             }
 
-            setSuccess(`✅ Aluno "${data.nome}" adicionado com sucesso!`);
+            setSuccess(`Aluno "${data.nome}" adicionado com sucesso!`);
             setForm({ nome: '', turma: '', notas: '', foto: '' });
         } catch (err: any) {
             setError(err.message);
@@ -152,8 +152,18 @@ export default function AdicionarAluno() {
                         </button>
                     </form>
 
-                    {success && <div className="feedback-success">{success}</div>}
-                    {error && <div className="feedback-error">{error}</div>}
+                    {success && (
+                        <div className="feedback-success">
+                            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px', fontSize: '1.2rem' }}>check_circle</span>
+                            {success}
+                        </div>
+                    )}
+                    {error && (
+                        <div className="feedback-error">
+                            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px', fontSize: '1.2rem' }}>error</span>
+                            {error}
+                        </div>
+                    )}
                 </div>
             </div>
         </IsLoggedIn>
