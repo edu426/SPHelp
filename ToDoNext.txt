@@ -24,8 +24,8 @@ Dashboard
     > Estatísticas e Resumo (Total de alunos, taxa de presenças, etc.)
 
 Editar Alunos
-    > Tirar email do aluno - so na Db
-    > Data de nascimento e idade do aluno + mandar email no aniversário - so na Db
+    > Tirar email do aluno - feito
+    > Data de nascimento e idade do aluno - so na Db
     > Razao da falta justificada + tirar vermelho das faltas justificadas - feito
     > Nome do diretor de turma - so na Db
     > Medidas de Suporte à Aprendizagem e à Inclusão(MSAI) - ver documento(tabela) - feito
@@ -35,4 +35,5 @@ Editar Alunos
 
 Layouts
     > Melhorar Layouts e Design geral - mais ou menos
-    > Logo, Nome e Lema novo
+    > Novos Icons (Google Material Symbols) - feito
+    > Logo, Nome e Lema novo    

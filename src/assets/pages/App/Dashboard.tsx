@@ -84,7 +84,7 @@ function Dashboard() {
                         <h2>Alunos</h2>
                         <Link to="/ver-todos-alunos" className="recent-ver-todos">Ver todos →</Link>
                     </div>
-                    <p className="recent-subtitle">Editados mais recentemente</p>
+                    <p className="recent-subtitle">Alunos editados recentemente</p>
 
                     {loadingAlunos ? (
                         <p className="recent-loading">A carregar alunos...</p>
