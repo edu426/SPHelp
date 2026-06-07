@@ -44,18 +44,27 @@ app.post("/api/sync", async (req, res) => {
 //-------------Criação de dados-------------
 // POST criar novo aluno
 app.post("/api/alunos", async (req, res) => {
-  const { nome, turma, notas, professorId, foto } = req.body;
+  const { nome, turma, notas, professorId, foto, dataNasc, diretorTurma } = req.body;
 
   if (!nome || !turma || !notas || !professorId) {
-    return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+    return res.status(400).json({ error: "Todos os campos obrigatórios não foram preenchidos." });
   }
 
   try {
     const aluno = await prisma.Alunos.create({
-      data: { nome, turma, notas, professorId, foto },
+      data: {
+        nome,
+        turma,
+        notas,
+        professorId,
+        foto,
+        ...(dataNasc ? { dataNasc: new Date(dataNasc) } : {}),
+        ...(diretorTurma ? { diretorTurma } : {}),
+      },
     });
     res.status(201).json(aluno);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Erro ao criar aluno." });
   }
 });
@@ -131,18 +140,25 @@ app.get("/api/alunos/recentes", async (req, res) => {
 // Chamado pelo EditarAluno.tsx quando o utilizador clica em "Guardar" depois de editar
 app.put("/api/alunos/:id", async (req, res) => {
   const { id } = req.params;
-  const { nome, turma, notas, foto } = req.body;
+  const { nome, turma, notas, foto, dataNasc, diretorTurma } = req.body;
 
   // Validar os campos necessários
   if (!nome || !turma || !notas) {
-    return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+    return res.status(400).json({ error: "Todos os campos principais são obrigatórios." });
   }
 
   try {
     // Atualiza o aluno pelo ID
     const aluno = await prisma.Alunos.update({
       where: { id },
-      data: { nome, turma, notas, foto },
+      data: {
+        nome,
+        turma,
+        notas,
+        foto,
+        ...(dataNasc ? { dataNasc: new Date(dataNasc) } : {}),
+        ...(diretorTurma !== undefined ? { diretorTurma } : {}),
+      },
     });
 
     // Retorna o aluno atualizado para o frontend

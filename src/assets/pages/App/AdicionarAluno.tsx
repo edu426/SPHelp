@@ -13,6 +13,8 @@ export default function AdicionarAluno() {
         turma: '',
         notas: '',
         foto: '',
+        dataNasc: '',
+        diretorTurma: '',
     });
 
     const [loading, setLoading] = useState(false);
@@ -75,7 +77,7 @@ export default function AdicionarAluno() {
             }
 
             setSuccess(`Aluno "${data.nome}" adicionado com sucesso!`);
-            setForm({ nome: '', turma: '', notas: '', foto: '' });
+            setForm({ nome: '', turma: '', notas: '', foto: '', dataNasc: '', diretorTurma: '' });
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -116,6 +118,29 @@ export default function AdicionarAluno() {
                                 value={form.turma}
                                 onChange={handleChange}
                                 required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="dataNasc">Data de Nascimento (Opcional)</label>
+                            <input
+                                id="dataNasc"
+                                name="dataNasc"
+                                type="date"
+                                value={form.dataNasc}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="diretorTurma">Diretor de Turma (Opcional)</label>
+                            <input
+                                id="diretorTurma"
+                                name="diretorTurma"
+                                type="text"
+                                placeholder="Ex: Prof. Maria"
+                                value={form.diretorTurma}
+                                onChange={handleChange}
                             />
                         </div>
 

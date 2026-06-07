@@ -801,3 +801,79 @@
     max-width: 1400px;
     margin: 2rem auto;
 }
+/* ── Floating Action Buttons (FAB) ── */
+.fab-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    z-index: 1000;
+}
+
+.fab-button:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.fab-button .material-symbols-outlined {
+    font-size: 28px;
+}
+
+.fab-edit {
+    background-color: #3b82f6; /* Blue for editing */
+}
+.fab-edit:hover {
+    background-color: #2563eb;
+}
+
+.fab-actions-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.fab-actions-container .fab-button {
+    position: static; /* Let flexbox position them */
+    width: 50px; /* Slightly smaller than the main FAB */
+    height: 50px;
+}
+
+.fab-save {
+    background-color: #10b981; /* Emerald/Green for save */
+    width: 60px !important;
+    height: 60px !important;
+}
+.fab-save:hover {
+    background-color: #059669;
+}
+
+.fab-cancel {
+    background-color: #ef4444; /* Red for cancel */
+    align-self: center; /* Center above the save button */
+}
+.fab-cancel:hover {
+    background-color: #dc2626;
+}
+
+.fab-save .spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

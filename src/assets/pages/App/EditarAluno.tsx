@@ -12,6 +12,8 @@ interface Student {
     notas: string;
     professorId: string;
     foto?: string;
+    dataNasc?: string;
+    diretorTurma?: string;
 }
 
 // Objeto que representa uma atividade
@@ -51,7 +53,7 @@ export default function EditarAluno() {
     const [isEditing, setIsEditing] = useState(false);
 
     // Guarda os valores iniciais enquanto se edita
-    const [form, setForm] = useState({ nome: '', turma: '', notas: '', foto: '' });
+    const [form, setForm] = useState({ nome: '', turma: '', notas: '', foto: '', dataNasc: '', diretorTurma: '' });
 
     // MSAI State
     const [msai, setMsai] = useState("000000000000000");
@@ -124,7 +126,8 @@ export default function EditarAluno() {
                 setAluno(data);
 
                 // insere os valores iniciais nos campos
-                setForm({ nome: data.nome, turma: data.turma, notas: data.notas, foto: data.foto || '' });
+                const formattedDate = data.dataNasc ? new Date(data.dataNasc).toISOString().split('T')[0] : '';
+                setForm({ nome: data.nome, turma: data.turma, notas: data.notas, foto: data.foto || '', dataNasc: formattedDate, diretorTurma: data.diretorTurma || '' });
 
                 // Fetch MSAI
                 const msaiResponse = await fetch(`/api/msai/${id}`);
@@ -222,7 +225,10 @@ export default function EditarAluno() {
 
     // Reseta os valores iniciais e sai do modo de edição
     const handleCancel = () => {
-        if (aluno) setForm({ nome: aluno.nome, turma: aluno.turma, notas: aluno.notas, foto: aluno.foto || '' });
+        if (aluno) {
+            const formattedDate = aluno.dataNasc ? new Date(aluno.dataNasc).toISOString().split('T')[0] : '';
+            setForm({ nome: aluno.nome, turma: aluno.turma, notas: aluno.notas, foto: aluno.foto || '', dataNasc: formattedDate, diretorTurma: aluno.diretorTurma || '' });
+        }
         setMsai(originalMsai);
         setIsEditing(false);
     };
@@ -413,17 +419,7 @@ export default function EditarAluno() {
                             </p>
                         </div>
 
-                        {/* Mostra "Editar" em modo de visualização, ou "Guardar + Cancelar" em modo de edição */}
-                        {!isEditing ? (
-                            <button className="btn-edit" onClick={() => setIsEditing(true)}>Editar</button>
-                        ) : (
-                            <div className="edit-actions">
-                                <button className="btn-save" onClick={handleSave} disabled={saving}>
-                                    {saving ? 'A guardar...' : 'Guardar'}
-                                </button>
-                                <button className="btn-cancel" onClick={handleCancel}>Cancelar</button>
-                            </div>
-                        )}
+                        {/* Edit actions moved to FAB */}
                     </div>
 
                     {saveMessage && (
@@ -434,6 +430,22 @@ export default function EditarAluno() {
           {saveMessage.replace(/^[✅❌]\s*/, '')}
       </div>
   )}
+
+                    {/* ── Floating Action Buttons (FAB) ── */}
+                    {!isEditing ? (
+                        <button className="fab-button fab-edit" onClick={() => setIsEditing(true)} title="Editar Aluno">
+                            <span className="material-symbols-outlined">edit</span>
+                        </button>
+                    ) : (
+                        <div className="fab-actions-container">
+                            <button className="fab-button fab-cancel" onClick={handleCancel} title="Cancelar Edição">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                            <button className="fab-button fab-save" onClick={handleSave} disabled={saving} title="Guardar Alterações">
+                                <span className="material-symbols-outlined">{saving ? 'sync' : 'save'}</span>
+                            </button>
+                        </div>
+                    )}
 
                     {/* ── Layout em Duas Colunas ── */}
                     <div className="aluno-two-columns">
@@ -470,6 +482,22 @@ export default function EditarAluno() {
                                     {isEditing
                                         ? <input className="edit-input" name="turma" value={form.turma} onChange={handleChange} />
                                         : <span className="info-value">{aluno.turma}</span>
+                                    }
+                                </div>
+
+                                <div className="info-row">
+                                    <span className="info-label">Data de Nascimento</span>
+                                    {isEditing
+                                        ? <input className="edit-input" type="date" name="dataNasc" value={form.dataNasc} onChange={handleChange} />
+                                        : <span className="info-value">{aluno.dataNasc ? new Date(aluno.dataNasc).toLocaleDateString('pt-PT') : 'N/A'}</span>
+                                    }
+                                </div>
+
+                                <div className="info-row">
+                                    <span className="info-label">Diretor de Turma</span>
+                                    {isEditing
+                                        ? <input className="edit-input" name="diretorTurma" value={form.diretorTurma} onChange={handleChange} />
+                                        : <span className="info-value">{aluno.diretorTurma || 'N/A'}</span>
                                     }
                                 </div>
 
