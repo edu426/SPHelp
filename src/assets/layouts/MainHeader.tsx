@@ -7,7 +7,7 @@ function MainHeader() {
     const { isSignedIn } = useUser();
 
     return (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <header>
                 <Link to="/dashboard" className="logo" style={{ backgroundColor: '#222222'}}>
                     <img src="/src/assets/images/SPHELP_noBG.png" alt="SPHELP" width={60} height={50} />
@@ -28,7 +28,7 @@ function MainHeader() {
                 </nav>
             </header>
 
-            <main>
+            <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Outlet />
             </main>
 

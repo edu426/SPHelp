@@ -409,8 +409,13 @@ export default function EditarAluno() {
         <IsLoggedIn>
             {professorId == aluno.professorId ? (
                 <div className="ver-aluno-page">
-                    <button onClick={() => navigate(-1)} className="btn-view">← Voltar</button>
-                    <Link to={`/exportar-aluno/${aluno.id}`} className="btn-view">Exportar</Link>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <button onClick={() => navigate(-1)} className="btn-view" style={{ margin: 0 }}>← Voltar</button>
+                        <Link to={`/exportar-aluno/${aluno.id}`} className="btn-export">
+                            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '6px', fontSize: '1.2rem' }}>download</span>
+                            Exportar
+                        </Link>
+                    </div>
                     <div className="ver-aluno-header">
                         <div>
                             <h1>Ficha do Aluno</h1>

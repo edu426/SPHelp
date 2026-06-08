@@ -95,13 +95,17 @@ export default function VerTodosAluno() {
 
                 {/* Search and filter bar */}
                 <div className="search-bar">
-                    <input
-                        type="text"
-                        className="search-input"
-                        placeholder="🔍 Pesquisar por nome..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                    />
+                    <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+                        <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', color: '#999', fontSize: '20px' }}>search</span>
+                        <input
+                            type="text"
+                            className="search-input"
+                            style={{ paddingLeft: '2.5rem', width: '100%', boxSizing: 'border-box' }}
+                            placeholder="Pesquisar por nome..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                     <select
                         className="filter-select"
                         value={filterTurma}
