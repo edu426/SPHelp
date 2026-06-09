@@ -14,7 +14,7 @@ function MainHeader() {
                     SPHelp
                 </Link>
                 <nav className="nav-links">
-                    <a className="nav-link" id="ajuda" style={{ cursor: "pointer" }}>Ajuda</a>
+                    <Link to="/ajuda" className="nav-link" id="ajuda">Ajuda</Link>
                     {isSignedIn ? (
                         <div className="user-actions">
                             <Link to="/dashboard" className="btn-entrar">Dashboard</Link>
@@ -34,7 +34,7 @@ function MainHeader() {
 
             <footer>
                 <div className="footer-links">
-                    <a href="#">Ajuda e Suporte</a>
+                    <Link to="/ajuda">Ajuda e Suporte</Link>
                     <a href="#">Política de Privacidade</a>
                     <a href="#">Contacto</a>
                 </div>

@@ -2,12 +2,15 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
-
+import { fieldEncryptionExtension } from "prisma-field-encryption";
 dotenv.config({
   path: "../.env"
 });
 const app = express();
-const prisma = new PrismaClient();
+const globalPrisma = new PrismaClient();
+const prisma = globalPrisma.$extends(
+  fieldEncryptionExtension()
+);
 
 // Verificar se a DATABASE_URL está definida
 if (!process.env.DATABASE_URL) {

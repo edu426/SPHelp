@@ -15,12 +15,12 @@ model Professor {
 
 model Alunos {
   id           String     @id @default(cuid())
-  nome         String
+  nome         String     /// @encrypted
   turma        String
   dataNasc     DateTime   @default(now())
   diretorTurma String     @default("N/A")
   professorId  String
-  notas        String     @default("")
+  notas        String     @default("") /// @encrypted
   foto         String?
   updatedAt    DateTime   @updatedAt
   presenca     Presenca[]
@@ -30,7 +30,7 @@ model Alunos {
 }
 model Atividades{
   id          String   @id @default(cuid())
-  resumo      String
+  resumo      String    /// @encrypted
   concluida   Boolean  
   presencaId  String?
   presenca    Presenca? @relation(fields: [presencaId], references: [id], onDelete: Cascade)
@@ -47,10 +47,10 @@ model Presenca { //vai deixar de ser so para presenças e vai passar a ser para 
   id        String   @id @default(cuid())
   alunoId   String
   data      DateTime @default(now())
-  sumario   String   @default("N/A")
+  sumario   String   @default("N/A") /// @encrypted
   presente  Boolean
   justifica Boolean
-  justificacao String? 
+  justificacao String?   /// @encrypted
   aluno     Alunos   @relation(fields: [alunoId], references: [id])
   atividades Atividades[]
 }
