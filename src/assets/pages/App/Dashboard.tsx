@@ -37,7 +37,11 @@ export default function Dashboard() {
             fetch("/api/sync", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ clerkId: user.id }),
+                body: JSON.stringify({
+                    clerkId: user.id,
+                    email: user.primaryEmailAddress?.emailAddress,
+                    firstName: user.firstName || 'Professor',
+                }),
             })
                 .then((res) => res.json())
                 .then((data) => {

@@ -23,7 +23,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Increased limit to support base64 images
 
 app.post("/api/sync", async (req, res) => {
-  const { clerkId } = req.body;
+  const { clerkId, email, firstName } = req.body;
 
   if (!clerkId) {
     return res.status(400).json({ error: "ClerkId é obrigatório" });
@@ -32,12 +32,69 @@ app.post("/api/sync", async (req, res) => {
   // Procura o utilizador na base de dados
   let Professor = await prisma.Professor.findUnique({ where: { clerkId } });
 
-  // Se não existir, cria um novo
+  // Se não existir, cria um novo e envia email de boas-vindas
   if (!Professor) {
     Professor = await prisma.Professor.create({
       data: { clerkId },
     });
     console.log("Novo professor criado:", Professor.id);
+
+    // Enviar email de boas-vindas (apenas se tivermos o email e as variáveis configuradas)
+    if (email && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+          },
+        });
+
+        await transporter.sendMail({
+          from: `"Inclui+" <${process.env.EMAIL_USER}>`,
+          to: email,
+          subject: "Bem-vindo ao Inclui+! 🎉",
+          html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+              <div style="background: #1a1a1a; padding: 32px; text-align: center;">
+                <h1 style="color: #f4d77e; margin: 0; font-size: 2rem; letter-spacing: -0.5px;">Inclui+</h1>
+                <p style="color: #aaa; margin: 8px 0 0 0; font-size: 0.9rem;">Gestão de Apoio Educativo</p>
+              </div>
+              <div style="padding: 40px 32px;">
+                <h2 style="color: #1a1a1a; margin: 0 0 12px 0; font-size: 1.5rem;">Olá, ${firstName}! 👋</h2>
+                <p style="color: #555; line-height: 1.7; margin: 0 0 24px 0;">
+                  Bem-vindo ao <strong>Inclui+</strong>! A tua conta foi criada com sucesso. Estamos muito contentes por teres escolhido a nossa plataforma para apoiar o teu trabalho.
+                </p>
+                <div style="background: #f9fafb; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #f4d77e;">
+                  <p style="margin: 0 0 12px 0; color: #444; font-weight: 600;">O que podes fazer com o Inclui+:</p>
+                  <ul style="margin: 0; padding-left: 20px; color: #555; line-height: 2;">
+                    <li>Gerir fichas detalhadas de cada aluno</li>
+                    <li>Registar presenças e justificar faltas</li>
+                    <li>Definir Medidas de Suporte (MSAI)</li>
+                    <li>Exportar relatórios para Excel</li>
+                  </ul>
+                </div>
+                <div style="text-align: center;">
+                  <a href="https://sphelp.vercel.app/dashboard" style="display: inline-block; background: #1a1a1a; color: #f4d77e; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1rem;">
+                    Ir para a Dashboard →
+                  </a>
+                </div>
+              </div>
+              <div style="background: #f9fafb; padding: 20px 32px; border-top: 1px solid #f3f4f6; text-align: center;">
+                <p style="margin: 0; color: #aaa; font-size: 0.8rem;">
+                  Tens dúvidas? Visita a nossa <a href="https://sphelp.vercel.app/ajuda" style="color: #555;">Central de Ajuda</a>.
+                </p>
+              </div>
+            </div>
+          `,
+        });
+
+        console.log("Email de boas-vindas enviado para:", email);
+      } catch (emailErr) {
+        // Não falhar o sync se o email falhar — apenas registar o erro
+        console.error("Erro ao enviar email de boas-vindas:", emailErr);
+      }
+    }
   } else {
     console.log("Professor já existe:", Professor.id);
   }
