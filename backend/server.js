@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 import { PrismaClient } from "@prisma/client";
 import { fieldEncryptionExtension } from "prisma-field-encryption";
 dotenv.config({
@@ -422,6 +423,88 @@ app.get("/api/dashboard/:professorId", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erro ao carregar dashboard." });
+  }
+});
+
+// POST enviar mensagem de suporte por email
+app.post("/api/suporte", async (req, res) => {
+  const { emailRemetente, assunto, mensagem } = req.body;
+
+  if (!emailRemetente || !assunto || !mensagem) {
+    return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+  }
+
+  // Validação básica do email do remetente
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailRemetente)) {
+    return res.status(400).json({ error: "Email de contacto inválido." });
+  }
+
+  // Verificar se as variáveis de ambiente estão configuradas
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.ADMIN_EMAIL) {
+    console.error("Variáveis de email não configuradas no .env");
+    return res.status(500).json({ error: "Serviço de email não configurado. Contacta o administrador." });
+  }
+
+  try {
+    // Configurar o transporter do Nodemailer com Gmail
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const dataFormatada = new Date().toLocaleString("pt-PT", {
+      timeZone: "Europe/Lisbon",
+      dateStyle: "full",
+      timeStyle: "short",
+    });
+
+    // Enviar o email para o admin
+    await transporter.sendMail({
+      from: `"Inclui+ Suporte" <${process.env.EMAIL_USER}>`,
+      to: process.env.ADMIN_EMAIL,
+      replyTo: emailRemetente,
+      subject: `[Inclui+ Suporte] ${assunto}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+          <div style="background: #1a1a1a; padding: 24px 32px;">
+            <h1 style="color: #f4d77e; margin: 0; font-size: 1.4rem;">Nova Mensagem de Suporte</h1>
+            <p style="color: #aaa; margin: 6px 0 0 0; font-size: 0.9rem;">Inclui+ — Central de Ajuda</p>
+          </div>
+          <div style="padding: 32px;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+              <tr>
+                <td style="padding: 10px 0; color: #666; font-size: 0.85rem; width: 120px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">De</td>
+                <td style="padding: 10px 0; color: #1a1a1a; font-weight: 600;">${emailRemetente}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f3f4f6;">
+                <td style="padding: 10px 0; color: #666; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Assunto</td>
+                <td style="padding: 10px 0; color: #1a1a1a;">${assunto}</td>
+              </tr>
+              <tr style="border-top: 1px solid #f3f4f6;">
+                <td style="padding: 10px 0; color: #666; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Data</td>
+                <td style="padding: 10px 0; color: #1a1a1a;">${dataFormatada}</td>
+              </tr>
+            </table>
+            <div style="background: #f9fafb; border-radius: 10px; padding: 20px; border-left: 4px solid #f4d77e;">
+              <p style="margin: 0; color: #666; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Mensagem</p>
+              <p style="margin: 0; color: #1a1a1a; line-height: 1.7; white-space: pre-wrap;">${mensagem}</p>
+            </div>
+          </div>
+          <div style="background: #f9fafb; padding: 16px 32px; border-top: 1px solid #f3f4f6;">
+            <p style="margin: 0; color: #aaa; font-size: 0.8rem; text-align: center;">Este email foi enviado automaticamente pelo sistema Inclui+.</p>
+          </div>
+        </div>
+      `,
+    });
+
+    res.json({ success: true, message: "Mensagem enviada com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao enviar email de suporte:", error);
+    res.status(500).json({ error: "Erro ao enviar mensagem. Tenta novamente mais tarde." });
   }
 });
 

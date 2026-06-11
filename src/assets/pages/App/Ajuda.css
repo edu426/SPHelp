@@ -197,3 +197,45 @@
     color: #555;
     line-height: 1.5;
 }
+
+/* Contact Toast Messages */
+.contact-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    animation: slideDown 0.3s ease;
+    line-height: 1.5;
+}
+
+.contact-toast.success {
+    background-color: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #15803d;
+}
+
+.contact-toast.error {
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+}
+
+.contact-toast .material-symbols-outlined {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
