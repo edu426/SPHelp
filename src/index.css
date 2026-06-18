@@ -24,3 +24,86 @@ body {
     min-width: 320px;
     min-height: 100vh;
 }
+
+/* ─────────────────────────────────────────
+   GLOBAL TOOLTIP  [data-tooltip="..."]
+   Usage: <span data-tooltip="Your hint">
+───────────────────────────────────────── */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: #1a1a2e;
+    color: #f0f0f0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 9999;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    border: 5px solid transparent;
+    border-top-color: #1a1a2e;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* ─────────────────────────────────────────
+   GLOBAL MICRO-INTERACTIONS
+───────────────────────────────────────── */
+
+/* Button press effect — applies to all buttons */
+button {
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+button:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Input & Textarea focus ring */
+input:not([type='file']):not([type='checkbox']):not([type='radio']),
+textarea,
+select {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+}
+
+input:not([type='file']):not([type='checkbox']):not([type='radio']):focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(248, 195, 1, 0.18) !important;
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import IsLoggedIn from '../../functions/IsLoggedIn';
 import './VerAluno.css';
 import { useUser } from '@clerk/clerk-react';
@@ -44,7 +45,7 @@ interface Atividade {
     concluida: boolean;
 }
 
-// Objeto que representa a presenÃ§a (inclui sessÃµes de aula/apoio)
+// Objeto que representa a presença (inclui sessÃµes de aula/apoio)
 interface Presenca {
     id: string;
     alunoId: string;
@@ -86,9 +87,9 @@ export default function EditarAluno() {
 
     // Espera q o PUT acabe
     const [saving, setSaving] = useState(false);
-    const [saveMessage, setSaveMessage] = useState('');
 
-    // Guarda as presenÃ§as do aluno (faltas)
+
+    // Guarda as presenças do aluno (faltas)
     const [presencas, setPresencas] = useState<Presenca[]>([]);
     const [loadingFaltas, setLoadingFaltas] = useState(true);
 
@@ -105,7 +106,7 @@ export default function EditarAluno() {
         concluida: false,
     });
     const [addingAula, setAddingAula] = useState(false);
-    const [aulaMessage, setAulaMessage] = useState('');
+
 
     // Justification inline edit
     const [editingFaltaId, setEditingFaltaId] = useState<string | null>(null);
@@ -181,7 +182,7 @@ export default function EditarAluno() {
         if (id) fetchAluno();
     }, [id]);
 
-    // Fetch das presenÃ§as deste aluno
+    // Fetch das presenças deste aluno
     useEffect(() => {
         const fetchPresencas = async () => {
             try {
@@ -191,7 +192,7 @@ export default function EditarAluno() {
                 const data = await response.json();
                 setPresencas(data);
             } catch {
-                // A lista ficarÃ¡ vazia
+                // A lista ficará vazia
             } finally {
                 setLoadingFaltas(false);
             }
@@ -225,7 +226,7 @@ export default function EditarAluno() {
     // Envia os dados para o PUT /api/alunos/:id
     const handleSave = async () => {
         setSaving(true);
-        setSaveMessage('');
+
         try {
             const response = await fetch(`/api/alunos/${id}`, {
                 method: 'PUT',
@@ -256,10 +257,10 @@ export default function EditarAluno() {
             setOriginalTerapias(terapias);
 
             setIsEditing(false);
-            setSaveMessage('✅ Alterações guardadas com sucesso!');
-            setTimeout(() => setSaveMessage(''), 3000);
+            toast.success('Alterações guardadas com sucesso!');
+
         } catch (err: any) {
-            setSaveMessage('âŒ ' + (err.message || 'Erro ao guardar alteraÃ§Ãµes.'));
+            toast.error(err.message || 'Erro ao guardar alterações.');
         } finally {
             setSaving(false);
         }
@@ -280,10 +281,10 @@ export default function EditarAluno() {
     const formatDate = (iso: string) =>
         new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-    // Envia um PUT para atualizar os campos `justifica` e `justificacao` de uma presenÃ§a
+    // Envia um PUT para atualizar os campos `justifica` e `justificacao` de uma presença
     const handleJustificar = async (presencaId: string, novoValor: boolean) => {
         if (novoValor && !editingJustificacao.trim()) {
-            setAulaMessage('âŒ Por favor, preencha a justificaÃ§Ã£o.');
+            toast.error('Por favor, preencha a justificação.');
             return;
         }
         try {
@@ -304,10 +305,10 @@ export default function EditarAluno() {
             setPresencas(prev => prev.map(p => p.id === presencaId ? updated : p));
             setEditingFaltaId(null);
             setEditingJustificacao('');
-            setAulaMessage('✅ PresenÃ§a atualizada com sucesso!');
-            setTimeout(() => setAulaMessage(''), 3000);
+            toast.success('Presença atualizada com sucesso!');
+
         } catch (err: any) {
-            setAulaMessage('âŒ ' + (err.message || 'Erro ao atualizar presenÃ§a.'));
+            toast.error(err.message || 'Erro ao atualizar presença.');
         }
     };
 
@@ -318,22 +319,22 @@ export default function EditarAluno() {
         return now.toISOString().slice(0, 16);
     };
 
-    // Registar nova aula (unified: sempre tem sumÃ¡rio + data + presente)
+    // Registar nova aula (unified: sempre tem sumário + data + presente)
     const handleAddAula = async () => {
         if (!novaAula.sumario.trim()) {
-            setAulaMessage('âŒ Por favor, preencha o sumÃ¡rio da aula.');
+            toast.error('Por favor, preencha o sumário da aula.');
             return;
         }
         if (!novaAula.presente && novaAula.justifica && !novaAula.justificacao.trim()) {
-            setAulaMessage('âŒ Por favor, preencha a justificaÃ§Ã£o da falta.');
+            toast.error('Por favor, preencha a justificação da falta.');
             return;
         }
         if (novaAula.addAtividade && !novaAula.resumoAtividade.trim()) {
-            setAulaMessage('âŒ Por favor, preencha o resumo da atividade.');
+            toast.error('Por favor, preencha o resumo da atividade.');
             return;
         }
         setAddingAula(true);
-        setAulaMessage('');
+
         try {
             let atividades = undefined;
             if (novaAula.addAtividade && novaAula.resumoAtividade.trim()) {
@@ -361,10 +362,10 @@ export default function EditarAluno() {
             setPresencas(prev => [nova, ...prev]);
             setShowAulaForm(false);
             setNovaAula({ data: '', sumario: '', presente: true, justifica: false, justificacao: '', addAtividade: false, resumoAtividade: '', concluida: false });
-            setAulaMessage('✅ Aula registada com sucesso!');
-            setTimeout(() => setAulaMessage(''), 3000);
+            toast.success('Aula registada com sucesso!');
+
         } catch (err: any) {
-            setAulaMessage('âŒ ' + (err.message || 'Erro ao registar aula.'));
+            toast.error(err.message || 'Erro ao registar aula.');
         } finally {
             setAddingAula(false);
         }
@@ -374,7 +375,7 @@ export default function EditarAluno() {
     const handleSaveAtividade = async () => {
         if (!editingAtividadeId) return;
         if (!editingAtividade.resumo.trim()) {
-            setAulaMessage('âŒ O resumo da atividade não pode estar vazio.');
+            toast.error('O resumo da atividade não pode estar vazio.');
             return;
         }
         setSavingAtividade(true);
@@ -393,19 +394,19 @@ export default function EditarAluno() {
                 return p;
             }));
             setEditingAtividadeId(null);
-            setAulaMessage('✅ Atividade atualizada com sucesso!');
-            setTimeout(() => setAulaMessage(''), 3000);
+            toast.success('Atividade atualizada com sucesso!');
+
         } catch (err: any) {
-            setAulaMessage('âŒ ' + (err.message || 'Erro ao atualizar atividade.'));
+            toast.error(err.message || 'Erro ao atualizar atividade.');
         } finally {
             setSavingAtividade(false);
         }
     };
 
-    // Adicionar nova atividade a uma aula jÃ¡ existente
+    // Adicionar nova atividade a uma aula já existente
     const handleAddAtividadeToAula = async (presencaId: string) => {
         if (!newAtividade.resumo.trim()) {
-            setAulaMessage('âŒ Por favor, preencha o resumo da atividade.');
+            toast.error('Por favor, preencha o resumo da atividade.');
             return;
         }
         setSavingNewAtividade(true);
@@ -426,10 +427,10 @@ export default function EditarAluno() {
             }));
             setAddingAtividadeForId(null);
             setNewAtividade({ resumo: '', concluida: false });
-            setAulaMessage('✅ Atividade adicionada com sucesso!');
-            setTimeout(() => setAulaMessage(''), 3000);
+            toast.success('Atividade adicionada com sucesso!');
+
         } catch (err: any) {
-            setAulaMessage('❌ ' + (err.message || 'Erro ao adicionar atividade.'));
+            toast.error((err.message || 'Erro ao adicionar atividade.'));
         } finally {
             setSavingNewAtividade(false);
         }
@@ -465,18 +466,11 @@ export default function EditarAluno() {
                             <p className="subtitle">
                                 {isEditing ? 'A editar informações do aluno.' : 'Informações detalhadas do aluno selecionado.'}
                             </p>
-                            {saveMessage && (
-                                <div className={saveMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
-                                    <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px' }}>
-                                        {saveMessage.startsWith('✅') ? 'check_circle' : 'error'}
-                                    </span>
-                                    {saveMessage.replace(/^[✅❌]\s*/, '')}
-                                </div>
-                            )}
-                        </div>
 
-                        {/* Edit actions moved to FAB */}
+                        </div>
                     </div>
+
+                    {/* Edit actions moved to FAB */}
 
                     {/* ── Floating Action Buttons (FAB) ── */}
                     {!isEditing ? (
@@ -549,7 +543,14 @@ export default function EditarAluno() {
                                 </div>
 
                                 <div className="info-row">
-                                    <span className="info-label">Diagnóstico</span>
+                                    <span className="info-label">
+                                        Diagnóstico
+                                        <span
+                                            data-tooltip="Resumo clínico ou diagnóstico educacional do aluno"
+                                            className="material-symbols-outlined"
+                                            style={{ fontSize: '0.95rem', color: '#bbb', verticalAlign: 'middle', marginLeft: '5px', cursor: 'help' }}
+                                        >info</span>
+                                    </span>
                                     {isEditing
                                         ? <textarea className="edit-input edit-textarea" name="notas" value={form.notas} onChange={handleChange} />
                                         : <span className="info-value">{aluno.notas}</span>
@@ -560,7 +561,14 @@ export default function EditarAluno() {
                             {/* ── Secção Terapias ── */}
                             <div className="msai-section" style={{ marginTop: '1.5rem' }}>
                                 <div className="faltas-header">
-                                    <h2>Terapias</h2>
+                                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        Terapias
+                                        <span
+                                            data-tooltip="Registo das terapias que o aluno frequenta fora ou dentro da escola"
+                                            className="material-symbols-outlined"
+                                            style={{ fontSize: '1.1rem', color: '#aaa', verticalAlign: 'middle', cursor: 'help' }}
+                                        >info</span>
+                                    </h2>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                                     {([
@@ -619,7 +627,10 @@ export default function EditarAluno() {
                             {/* ── Secção de MSAI ── */}
                             <div className="msai-section">
                                 <div className="faltas-header">
-                                    <h2>Medidas de Suporte à Aprendizagem e à Inclusão</h2>
+                                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        MSAI
+                                        <span data-tooltip="Medidas de Suporte à Aprendizagem e à Inclusão" className="material-symbols-outlined" style={{ fontSize: '1.2rem', color: '#999', cursor: 'help' }}>info</span>
+                                    </h2>
                                 </div>
                                 <div className="msai-columns">
                                     <div className="msai-column">
@@ -668,14 +679,6 @@ export default function EditarAluno() {
                             </div>
 
                             {/* Mensagem de feedback */}
-                            {aulaMessage && (
-                                <div className={aulaMessage.startsWith('✅') ? 'feedback-success' : 'feedback-error'}>
-                                    <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px' }}>
-                                        {aulaMessage.startsWith('✅') ? 'check_circle' : 'error'}
-                                    </span>
-                                    {aulaMessage.replace(/^[✅âŒ]\s*/, '')}
-                                </div>
-                            )}
 
                             {/* Lista de aulas */}
                             {loadingFaltas ? (
@@ -688,7 +691,7 @@ export default function EditarAluno() {
                                     {presencas.map(p => (
                                         <div key={p.id} className={`aula-card ${!p.presente && !p.justifica ? 'aula-card-absent' : ''}`}>
 
-                                            {/* Header: data + badge de presenÃ§a */}
+                                            {/* Header: data + badge de presença */}
                                             <div className="aula-card-header">
                                                 <span className="aula-card-date"><span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px' }}>calendar_month</span> {formatDate(p.data)}</span>
                                                 <span className={p.presente ? 'badge-presente' : 'badge-falta'}>
@@ -696,17 +699,17 @@ export default function EditarAluno() {
                                                 </span>
                                             </div>
 
-                                            {/* SumÃ¡rio */}
+                                            {/* Sumário */}
                                             {p.sumario && p.sumario !== 'N/A' && (
                                                 <p className="aula-card-sumario">{p.sumario}</p>
                                             )}
 
-                                            {/* JustificaÃ§Ã£o (se falta) */}
+                                            {/* Justificação (se falta) */}
                                             {!p.presente && (
                                                 <div className="aula-card-justificacao">
                                                     {editingFaltaId === p.id ? (
                                                         <div className="atividade-edit-form">
-                                                            <label className="info-label">Motivo da justificaÃ§Ã£o</label>
+                                                            <label className="info-label">Motivo da justificação</label>
                                                             <textarea
                                                                 className="edit-input edit-textarea"
                                                                 placeholder="Descreva o motivo da falta..."
@@ -733,7 +736,7 @@ export default function EditarAluno() {
                                                             )}
                                                             <button
                                                                 className="btn-edit-falta"
-                                                                title="Editar justificaÃ§Ã£o"
+                                                                title="Editar justificação"
                                                                 onClick={() => { setEditingFaltaId(p.id); setEditingJustificacao(p.justificacao || ''); }}
                                                             >
                                                                 <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>edit</span>
@@ -804,7 +807,7 @@ export default function EditarAluno() {
                                                             checked={newAtividade.concluida}
                                                             onChange={e => setNewAtividade(prev => ({ ...prev, concluida: e.target.checked }))}
                                                         />
-                                                        JÃ¡ concluÃ­da
+                                                        Já concluída
                                                     </label>
                                                     <div className="falta-form-actions" style={{ marginTop: '0.5rem' }}>
                                                         <button className="btn-save" onClick={() => handleAddAtividadeToAula(p.id)} disabled={savingNewAtividade}>
@@ -826,7 +829,7 @@ export default function EditarAluno() {
                                 </div>
                             )}
 
-                            {/* FormulÃ¡rio para registar nova aula */}
+                            {/* Formulário para registar nova aula */}
                             {showAulaForm && (
                                 <div className="aula-form">
                                     <p className="falta-form-title">Registar Nova Aula</p>
@@ -843,7 +846,7 @@ export default function EditarAluno() {
                                     </div>
 
                                     <div className="form-group">
-                                        <label className="info-label">SumÃ¡rio <span style={{ color: '#e55' }}>*</span></label>
+                                        <label className="info-label">Sumário <span style={{ color: '#e55' }}>*</span></label>
                                         <textarea
                                             className="edit-input edit-textarea"
                                             placeholder="O que foi trabalhado nesta aula..."
@@ -920,7 +923,7 @@ export default function EditarAluno() {
                                                     checked={novaAula.concluida}
                                                     onChange={e => setNovaAula(prev => ({ ...prev, concluida: e.target.checked }))}
                                                 />
-                                                Atividade jÃ¡ concluÃ­da
+                                                Atividade já concluída
                                             </label>
                                         </>
                                     )}
@@ -941,12 +944,13 @@ export default function EditarAluno() {
                             )}
                         </div>
                     </div>
-                </div>) : (
+                </div>
+            ) : (
                 <div className="ver-aluno-page">
-                    <button onClick={() => navigate(-1)} className="btn-view">â† Voltar</button>
+                    <button onClick={() => navigate(-1)} className="btn-view">← Voltar</button>
                     <div className="ver-aluno-header">
                         <div>
-                            <h1>Este aluno não Ã© seu</h1>
+                            <h1>Este aluno não é seu</h1>
                         </div>
                     </div>
                 </div>

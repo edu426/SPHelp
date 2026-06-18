@@ -910,3 +910,107 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+
+/* ─────────────────────────────────────────
+   MICRO-INTERACTIONS
+───────────────────────────────────────── */
+
+/* Aula cards lift on hover */
+.aula-card {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.aula-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+}
+
+/* Student info rows highlight */
+.info-row {
+    transition: background 0.15s ease;
+    border-radius: 8px;
+    padding: 0.1rem 0.3rem;
+    margin: 0 -0.3rem;
+}
+
+.info-row:hover {
+    background: rgba(248, 195, 1, 0.06);
+}
+
+/* MSAI checkboxes scale on hover */
+.msai-checkbox {
+    transition: background 0.15s ease;
+    padding: 4px 6px;
+    border-radius: 6px;
+    cursor: default;
+}
+
+.msai-checkbox:has(input:not(:disabled)):hover {
+    background: rgba(248, 195, 1, 0.08);
+    cursor: pointer;
+}
+
+.msai-checkbox input[type="checkbox"] {
+    accent-color: var(--primary-color, #F8C301);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+
+.msai-checkbox input[type="checkbox"]:hover:not(:disabled) {
+    transform: scale(1.15);
+}
+
+/* FAB buttons pulse on first render */
+.fab-button {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease !important;
+}
+
+.fab-button:hover:not(:disabled) {
+    transform: scale(1.08) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Edit input focus transitions already in index.css — override border to match theme */
+.edit-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(248, 195, 1, 0.18) !important;
+}
+
+/* Atividade badge hover */
+.atividade-badge {
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.atividade-badge:hover {
+    background: rgba(248, 195, 1, 0.08);
+    transform: translateX(3px);
+}
+
+/* btn-view (Voltar) hover */
+.btn-view {
+    transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-view:hover {
+    transform: translateX(-3px);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+}
+
+/* Save / Cancel buttons */
+.btn-save {
+    transition: background 0.15s ease, transform 0.12s ease !important;
+}
+
+.btn-save:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+.btn-cancel {
+    transition: background 0.15s ease, transform 0.12s ease !important;
+}
+
+.btn-cancel:hover {
+    filter: brightness(0.92);
+}

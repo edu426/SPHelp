@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Toaster } from 'react-hot-toast'
 import './index.css'
 import Home from './assets/pages/Home.tsx'
 import MainHeader from "./assets/layouts/MainHeader.tsx"
@@ -22,6 +23,28 @@ if (!PUBLISHABLE_KEY) {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          duration: 3500,
+          style: {
+            background: '#1a1a2e',
+            color: '#f0f0f0',
+            borderRadius: '12px',
+            padding: '14px 18px',
+            fontSize: '0.9rem',
+            fontFamily: 'Inter, sans-serif',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          },
+          success: {
+            iconTheme: { primary: '#10b981', secondary: '#fff' },
+          },
+          error: {
+            iconTheme: { primary: '#ef4444', secondary: '#fff' },
+          },
+        }}
+      />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MainHeader />}>
