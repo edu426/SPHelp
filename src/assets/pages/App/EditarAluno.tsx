@@ -38,6 +38,17 @@ const DEFAULT_TERAPIAS: TerapiasData = {
     notasTerapia: null,
 };
 
+const calculateAge = (birthdate: string) => {
+    const birthDate = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+};
+
 // Objeto que representa uma atividade
 interface Atividade {
     id: string;
@@ -54,7 +65,7 @@ interface Presenca {
     justifica: boolean;
     justificacao?: string | null;
     sumario?: string | null;        // preenchido em sessÃµes de aula/apoio
-    atividades?: Atividade[];       // relacÃ£o incluÃ­da pelo backend
+    atividades?: Atividade[];       // relação incluÃ­da pelo backend
 }
 
 export default function EditarAluno() {
@@ -266,7 +277,7 @@ export default function EditarAluno() {
         }
     };
 
-    // Reseta os valores iniciais e sai do modo de ediÃ§Ã£o
+    // Reseta os valores iniciais e sai do modo de edição
     const handleCancel = () => {
         if (aluno) {
             const formattedDate = aluno.dataNasc ? new Date(aluno.dataNasc).toISOString().split('T')[0] : '';
@@ -371,7 +382,7 @@ export default function EditarAluno() {
         }
     };
 
-    // Guardar ediÃ§Ã£o de atividade
+    // Guardar edição de atividade
     const handleSaveAtividade = async () => {
         if (!editingAtividadeId) return;
         if (!editingAtividade.resumo.trim()) {
@@ -530,7 +541,7 @@ export default function EditarAluno() {
                                     <span className="info-label">Data de Nascimento</span>
                                     {isEditing
                                         ? <input className="edit-input" type="date" name="dataNasc" value={form.dataNasc} onChange={handleChange} />
-                                        : <span className="info-value">{aluno.dataNasc ? new Date(aluno.dataNasc).toLocaleDateString('pt-PT') : 'N/A'}</span>
+                                        : <span className="info-value">{aluno.dataNasc ? `${new Date(aluno.dataNasc).toLocaleDateString('pt-PT')} - ${calculateAge(aluno.dataNasc)} anos` : 'N/A'}</span>
                                     }
                                 </div>
 
@@ -635,27 +646,27 @@ export default function EditarAluno() {
                                 <div className="msai-columns">
                                     <div className="msai-column">
                                         <h3>Medidas Universais</h3>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[0] === '1'} onChange={() => handleMsaiChange(0)} disabled={!isEditing} /> Diferenciação pedagógica</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[1] === '1'} onChange={() => handleMsaiChange(1)} disabled={!isEditing} /> Acomodações curriculares</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[2] === '1'} onChange={() => handleMsaiChange(2)} disabled={!isEditing} /> O enriquecimento curricular</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[3] === '1'} onChange={() => handleMsaiChange(3)} disabled={!isEditing} /> A promoção do comportamento pró-social</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[4] === '1'} onChange={() => handleMsaiChange(4)} disabled={!isEditing} /> A intervenção com foco académico ou comportamental em pequenos grupos</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[0] === '1'} onChange={() => handleMsaiChange(0)} disabled={!isEditing} /> a) Diferenciação pedagógica</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[1] === '1'} onChange={() => handleMsaiChange(1)} disabled={!isEditing} />b) Acomodações curriculares</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[2] === '1'} onChange={() => handleMsaiChange(2)} disabled={!isEditing} />c) O enriquecimento curricular</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[3] === '1'} onChange={() => handleMsaiChange(3)} disabled={!isEditing} />d) A promoção do comportamento pró-social</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[4] === '1'} onChange={() => handleMsaiChange(4)} disabled={!isEditing} />e) A intervenção com foco académico ou comportamental em pequenos grupos</label>
                                     </div>
                                     <div className="msai-column">
                                         <h3>Medidas Seletivas</h3>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[5] === '1'} onChange={() => handleMsaiChange(5)} disabled={!isEditing} /> Os percursos curriculares diferenciados</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[6] === '1'} onChange={() => handleMsaiChange(6)} disabled={!isEditing} /> As adaptações curriculares não significativas</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[7] === '1'} onChange={() => handleMsaiChange(7)} disabled={!isEditing} /> Apoio psicopedagógico</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[8] === '1'} onChange={() => handleMsaiChange(8)} disabled={!isEditing} /> A antecipação e o reforço das aprendizagens</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[9] === '1'} onChange={() => handleMsaiChange(9)} disabled={!isEditing} /> O apoio tutorial</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[5] === '1'} onChange={() => handleMsaiChange(5)} disabled={!isEditing} />a) Os percursos curriculares diferenciados</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[6] === '1'} onChange={() => handleMsaiChange(6)} disabled={!isEditing} />b) As adaptações curriculares não significativas</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[7] === '1'} onChange={() => handleMsaiChange(7)} disabled={!isEditing} />c) Apoio psicopedagógico</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[8] === '1'} onChange={() => handleMsaiChange(8)} disabled={!isEditing} />d) A antecipação e o reforço das aprendizagens</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[9] === '1'} onChange={() => handleMsaiChange(9)} disabled={!isEditing} />e) O apoio tutorial</label>
                                     </div>
                                     <div className="msai-column">
                                         <h3>Medidas Adicionais</h3>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[10] === '1'} onChange={() => handleMsaiChange(10)} disabled={!isEditing} /> A frequência do ano de escolaridade por disciplinas</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[11] === '1'} onChange={() => handleMsaiChange(11)} disabled={!isEditing} /> As adaptações curriculares significativas</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[12] === '1'} onChange={() => handleMsaiChange(12)} disabled={!isEditing} /> O plano individual de transição</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[13] === '1'} onChange={() => handleMsaiChange(13)} disabled={!isEditing} /> O desenvolvimento de metodologias e estratégias de ensino estruturado</label>
-                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[14] === '1'} onChange={() => handleMsaiChange(14)} disabled={!isEditing} /> O desenvolvimento de competências de autonomia pessoal e social</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[10] === '1'} onChange={() => handleMsaiChange(10)} disabled={!isEditing} />a) A frequência do ano de escolaridade por disciplinas</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[11] === '1'} onChange={() => handleMsaiChange(11)} disabled={!isEditing} />b) As adaptações curriculares significativas</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[12] === '1'} onChange={() => handleMsaiChange(12)} disabled={!isEditing} />c) O plano individual de transição</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[13] === '1'} onChange={() => handleMsaiChange(13)} disabled={!isEditing} />d) O desenvolvimento de metodologias e estratégias de ensino estruturado</label>
+                                        <label className="msai-checkbox"><input type="checkbox" checked={msai[14] === '1'} onChange={() => handleMsaiChange(14)} disabled={!isEditing} />e) O desenvolvimento de competências de autonomia pessoal e social</label>
                                     </div>
                                 </div>
                             </div>
@@ -672,7 +683,7 @@ export default function EditarAluno() {
                                         <p className="faltas-summary">
                                             {totalAulas === 0
                                                 ? 'Nenhuma aula registada.'
-                                                : `${totalAulas} aula${totalAulas > 1 ? 's' : ''} Â· ${totalFaltas} falta${totalFaltas !== 1 ? 's' : ''}`}
+                                                : `${totalAulas} aula${totalAulas > 1 ? 's' : ''} · ${totalFaltas} falta${totalFaltas !== 1 ? 's' : ''}`}
                                         </p>
                                     )}
                                 </div>
@@ -729,10 +740,10 @@ export default function EditarAluno() {
                                                         <div className="justificacao-row">
                                                             {p.justifica ? (
                                                                 <span className="justificacao-sim" title={p.justificacao || ''}>
-                                                                    <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#10b981' }}>check</span>Justificada {p.justificacao && <em>â€” {p.justificacao.length > 40 ? p.justificacao.slice(0, 40) + '...' : p.justificacao}</em>}
+                                                                    <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#10b981' }}>check</span>Justificada {p.justificacao && <em> {p.justificacao.length > 40 ? p.justificacao.slice(0, 40) + '...' : p.justificacao}</em>}
                                                                 </span>
                                                             ) : (
-                                                                <span className="justificacao-nao"><span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#f59e0b' }}>warning</span>NÃ£o justificada</span>
+                                                                <span className="justificacao-nao"><span className="material-symbols-outlined" style={{ fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px', color: '#f59e0b' }}>warning</span>Não justificada</span>
                                                             )}
                                                             <button
                                                                 className="btn-edit-falta"
@@ -763,7 +774,7 @@ export default function EditarAluno() {
                                                                 checked={editingAtividade.concluida}
                                                                 onChange={e => setEditingAtividade(prev => ({ ...prev, concluida: e.target.checked }))}
                                                             />
-                                                            ConcluÃ­da
+                                                            Concluída
                                                         </label>
                                                         <div className="falta-form-actions" style={{ marginTop: '0.5rem' }}>
                                                             <button className="btn-save" onClick={handleSaveAtividade} disabled={savingAtividade}>

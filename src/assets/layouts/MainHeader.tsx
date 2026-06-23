@@ -10,8 +10,8 @@ function MainHeader() {
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <header>
                 <Link to="/dashboard" className="logo">
-                    <img src="/src/assets/images/incluimais.png" alt="Inclui+" width={60} height={50} />
-                    Inclui +
+                    <img src="/src/assets/images/inclmais-removebg-preview.png" alt="Inclui+" className="logo-img" />
+                    <span className="logo-text">Inclui +</span>
                 </Link>
                 <nav className="nav-links">
                     <Link to="/ajuda" className="nav-link" id="ajuda">Ajuda</Link>

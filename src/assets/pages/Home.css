@@ -162,7 +162,7 @@
 
 .step-icon {
     margin: 1.5rem 0 1rem;
-    color: #10b981;
+    color: var(--primary-color);
 }
 
 .step-icon .material-symbols-outlined {
@@ -191,7 +191,7 @@
 
 /* ── Impact Section ── */
 .impact {
-    background: #1e293b;
+    background: #222222;
     color: #fff;
     padding: 100px 5%;
     text-align: center;
@@ -224,7 +224,7 @@
     font-size: 4rem;
     font-weight: 800;
     margin: 0;
-    background: linear-gradient(135deg, #34d399, #3b82f6);
+    background: linear-gradient(135deg, #F8C301, #FF8C00);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -234,6 +234,7 @@
     font-size: 1.1rem;
     color: #e2e8f0;
     margin-top: 0.5rem;
+    font-weight: 500;
 }
 
 /* ── Features Section ── */
@@ -267,13 +268,13 @@
 .feature-icon {
     width: 80px;
     height: 80px;
-    background-color: #f0fdf4;
+    background-color: rgba(248, 195, 1, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 24px;
-    color: #10b981;
+    color: var(--primary-color);
 }
 
 .feature-icon .material-symbols-outlined {

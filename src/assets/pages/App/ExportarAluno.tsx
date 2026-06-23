@@ -17,12 +17,31 @@ interface Student {
     foto?: string;
 }
 
+interface Atividade {
+    id: string;
+    resumo: string;
+    concluida: boolean;
+}
+
+interface TerapiasData {
+    fisioterapia: boolean;
+    terapiaFala: boolean;
+    terapiaOcupacional: boolean;
+    psicologia: boolean;
+    outros: boolean;
+    outrosDescricao: string | null;
+    notasTerapia: string | null;
+}
+
 interface Presenca {
     id: string;
     alunoId: string;
     data: string;
     presente: boolean;
     justifica: boolean;
+    justificacao?: string | null;
+    sumario?: string | null;
+    atividades?: Atividade[];
 }
 
 // Labels for each MSAI bit (index 0–14)
@@ -69,6 +88,7 @@ export default function ExportarAluno() {
     const [aluno, setAluno] = useState<Student | null>(null);
     const [presencas, setPresencas] = useState<Presenca[]>([]);
     const [msai, setMsai] = useState<string>('000000000000000');
+    const [terapias, setTerapias] = useState<TerapiasData | null>(null);
     // UI state
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -79,6 +99,7 @@ export default function ExportarAluno() {
         dadosPessoais: true,
         presencas: true,
         msai: true,
+        terapias: true,
     });
 
     // ── Fetch ─────────────────────────────────────────────────────────────────
@@ -127,6 +148,13 @@ export default function ExportarAluno() {
                     const msaiData = await msaiRes.json();
                     if (msaiData?.msai) setMsai(msaiData.msai);
                 }
+
+                // Terapias
+                const terapiasRes = await fetch(`/api/terapias/${id}`);
+                if (terapiasRes.ok) {
+                    const terapiasData = await terapiasRes.json();
+                    setTerapias(terapiasData);
+                }
             } catch (err: any) {
                 setError(err.message || 'Erro ao carregar dados.');
             } finally {
@@ -146,7 +174,7 @@ export default function ExportarAluno() {
 
     const handleExport = () => {
         if (!aluno) return;
-        if (!exportSections.dadosPessoais && !exportSections.presencas && !exportSections.msai) {
+        if (!exportSections.dadosPessoais && !exportSections.presencas && !exportSections.msai && !exportSections.terapias) {
             setMessage('Selecione pelo menos uma secção para exportar.');
             setTimeout(() => setMessage(''), 3000);
             return;
@@ -167,19 +195,24 @@ export default function ExportarAluno() {
                 XLSX.utils.book_append_sheet(wb, wsDados, 'Dados Pessoais');
             }
 
-            // ── Sheet 2: Presenças ──
+            // ── Sheet 2: Aulas e Apoio ──
             if (exportSections.presencas) {
                 if (presencas.length === 0) {
-                    const wsEmpty = XLSX.utils.json_to_sheet([{ Info: 'Sem registos de presença.' }]);
-                    XLSX.utils.book_append_sheet(wb, wsEmpty, 'Presenças');
+                    const wsEmpty = XLSX.utils.json_to_sheet([{ Info: 'Sem registos de aulas ou apoio.' }]);
+                    XLSX.utils.book_append_sheet(wb, wsEmpty, 'Aulas e Apoio');
                 } else {
                     const presRows = presencas.map(p => ({
                         'Data': formatDate(p.data),
                         'Estado': p.presente ? 'Presente' : 'Falta',
                         'Justificada': !p.presente ? (p.justifica ? 'Sim' : 'Não') : '—',
+                        'Justificação': p.justificacao || '—',
+                        'Sumário': p.sumario || '—',
+                        'Atividades': p.atividades && p.atividades.length > 0
+                            ? p.atividades.map(a => `${a.resumo} (${a.concluida ? 'Concluída' : 'Pendente'})`).join(' | ')
+                            : '—',
                     }));
                     const wsPresencas = XLSX.utils.json_to_sheet(presRows);
-                    XLSX.utils.book_append_sheet(wb, wsPresencas, 'Presenças');
+                    XLSX.utils.book_append_sheet(wb, wsPresencas, 'Aulas e Apoio');
                 }
             }
 
@@ -197,6 +230,20 @@ export default function ExportarAluno() {
                 });
                 const wsMsai = XLSX.utils.json_to_sheet(msaiRows);
                 XLSX.utils.book_append_sheet(wb, wsMsai, 'MSAI');
+            }
+
+            // ── Sheet 4: Terapias ──
+            if (exportSections.terapias && terapias) {
+                const terapiasRows = [
+                    { Terapia: 'Fisioterapia', Ativa: terapias.fisioterapia ? 'Sim' : 'Não' },
+                    { Terapia: 'Terapia da Fala', Ativa: terapias.terapiaFala ? 'Sim' : 'Não' },
+                    { Terapia: 'Terapia Ocupacional', Ativa: terapias.terapiaOcupacional ? 'Sim' : 'Não' },
+                    { Terapia: 'Psicologia', Ativa: terapias.psicologia ? 'Sim' : 'Não' },
+                    { Terapia: 'Outros', Ativa: terapias.outros ? `Sim (${terapias.outrosDescricao || ''})` : 'Não' },
+                    { Terapia: 'Notas', Ativa: terapias.notasTerapia || '' },
+                ];
+                const wsTerapias = XLSX.utils.json_to_sheet(terapiasRows);
+                XLSX.utils.book_append_sheet(wb, wsTerapias, 'Terapias');
             }
 
             const date = new Date().toISOString().split('T')[0];
@@ -259,7 +306,7 @@ export default function ExportarAluno() {
                             </div>
                         </label>
 
-                        {/* Presenças */}
+                        {/* Aulas / Apoio */}
                         <label style={sectionLabelStyle(exportSections.presencas)}>
                             <input
                                 type="checkbox"
@@ -268,7 +315,7 @@ export default function ExportarAluno() {
                                 style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
                             />
                             <div>
-                                <strong>Presenças</strong>
+                                <strong>Aulas / Apoio</strong>
                                 <p style={sectionDescStyle}>
                                     {presencas.length === 0
                                         ? 'Sem registos.'
@@ -292,6 +339,20 @@ export default function ExportarAluno() {
                                         ? 'Nenhuma medida ativa.'
                                         : `${msaiAtivas} medida(s) ativa(s).`}
                                 </p>
+                            </div>
+                        </label>
+
+                        {/* Terapias */}
+                        <label style={sectionLabelStyle(exportSections.terapias)}>
+                            <input
+                                type="checkbox"
+                                checked={exportSections.terapias}
+                                onChange={() => toggleSection('terapias')}
+                                style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+                            />
+                            <div>
+                                <strong>Terapias</strong>
+                                <p style={sectionDescStyle}>Fisioterapia, Terapia da Fala, Psicologia, etc.</p>
                             </div>
                         </label>
                     </div>
@@ -328,28 +389,33 @@ export default function ExportarAluno() {
                         </>
                     )}
 
-                    {/* Presenças preview */}
+                    {/* Aulas / Apoio preview */}
                     {exportSections.presencas && (
                         <>
-                            <h2 className="subtitle">Pré-visualização — Presenças</h2>
+                            <h2 className="subtitle">Pré-visualização — Aulas e Apoio</h2>
                             <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
                                 {presencas.length === 0 ? (
-                                    <p className="no-results">Sem registos de presença.</p>
+                                    <p className="no-results">Sem registos de aulas/apoio.</p>
                                 ) : (
                                     <table className="student-table">
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
                                                 <th>Estado</th>
-                                                <th>Justificada</th>
+                                                <th>Sumário</th>
+                                                <th>Atividades</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {presencas.map((p, i) => (
                                                 <tr key={p.id} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
                                                     <td>{formatDate(p.data)}</td>
-                                                    <td>{p.presente ? 'Presente' : 'Falta'}</td>
-                                                    <td>{!p.presente ? (p.justifica ? 'Sim' : 'Não') : '—'}</td>
+                                                    <td>
+                                                        {p.presente ? 'Presente' : 'Falta'}
+                                                        {!p.presente && <span style={{ fontSize: '0.8rem', display: 'block', color: '#777' }}>{p.justifica ? '(Justificada)' : '(Não Justificada)'}</span>}
+                                                    </td>
+                                                    <td>{p.sumario || '—'}</td>
+                                                    <td>{p.atividades?.length || 0} ativ.</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -382,6 +448,30 @@ export default function ExportarAluno() {
                                                 </tr>
                                             ))
                                         )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Terapias preview */}
+                    {exportSections.terapias && terapias && (
+                        <>
+                            <h2 className="subtitle">Pré-visualização — Terapias</h2>
+                            <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
+                                <table className="student-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Terapia</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr className="row-even"><td>Fisioterapia</td><td>{terapias.fisioterapia ? 'Sim' : 'Não'}</td></tr>
+                                        <tr className="row-odd"><td>Terapia da Fala</td><td>{terapias.terapiaFala ? 'Sim' : 'Não'}</td></tr>
+                                        <tr className="row-even"><td>Terapia Ocupacional</td><td>{terapias.terapiaOcupacional ? 'Sim' : 'Não'}</td></tr>
+                                        <tr className="row-odd"><td>Psicologia</td><td>{terapias.psicologia ? 'Sim' : 'Não'}</td></tr>
+                                        <tr className="row-even"><td>Outros</td><td>{terapias.outros ? `Sim (${terapias.outrosDescricao || ''})` : 'Não'}</td></tr>
                                     </tbody>
                                 </table>
                             </div>

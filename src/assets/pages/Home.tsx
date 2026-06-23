@@ -113,18 +113,6 @@ function Home() {
                     </div>
                 </div>
             </section>
-
-            <footer className="footer">
-                <div className="footer-content">
-                    <div className="footer-brand">
-                        <h2></h2>
-                        <p>A sua plataforma de gestão educativa para educação especial.</p>
-                    </div>
-                    <div className="footer-links">
-                        <p>&copy; {new Date().getFullYear()} Inclui +. Todos os direitos reservados.</p>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }

@@ -1,24 +1,48 @@
 /* Header */
 header {
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     padding: 20px 100px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(248, 195, 1, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .logo {
-    font-family: 'Poppins-Bold', sans-serif;
-    font-size: 36px;
-    color: #FFFFFF;
-    text-decoration: none;
     display: flex;
     align-items: center;
-    padding: 3px 15px;
+    gap: 18px; /* Slightly more gap for larger image */
+    text-decoration: none;
+    padding: 5px 15px 5px 0;
     border-radius: 25px;
-    font-weight: bold;
     margin-right: 20px;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
+.logo-img {
+    height: 70px; /* Much bigger and more important */
+    width: auto;
+    object-fit: contain;
+    border-radius: 8px; 
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.logo-text {
+    font-family: 'Poppins-Bold', sans-serif;
+    font-size: 38px; /* Larger */
+    color: #FFFFFF;
+    font-weight: 800; /* Extra bold */
+    letter-spacing: -0.03em;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Adds depth */
 }
 
 .nav-links {

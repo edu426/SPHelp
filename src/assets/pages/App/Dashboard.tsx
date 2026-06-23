@@ -97,7 +97,7 @@ export default function Dashboard() {
                 {/* ── Top Header & Actions ── */}
                 <header className="dashboard-header">
                     <div>
-                        <h1 className="welcome-text">Olá, {user?.firstName} 👋</h1>
+                        <h1 className="welcome-text">Olá, {user?.firstName}</h1>
                         <p className="welcome-subtext">Aqui está o resumo das tuas turmas.</p>
                     </div>
                     <div className="quick-actions">
@@ -131,7 +131,7 @@ export default function Dashboard() {
                                     <p>Total de Alunos</p>
                                 </div>
                             </div>
-                            
+
                             <div className="stat-card">
                                 <div className="stat-icon" style={{ backgroundColor: '#fef3c7', color: '#d97706' }}>
                                     <span className="material-symbols-outlined">pending_actions</span>
@@ -155,14 +155,14 @@ export default function Dashboard() {
 
                         {/* ── Main Layout ── */}
                         <div className="dashboard-main-grid">
-                            
+
                             {/* Left: Recent Students */}
                             <section className="dashboard-panel">
                                 <div className="panel-header">
                                     <h2>Alunos Recentes</h2>
                                     <Link to="/ver-todos-alunos" className="link-ver-todos">Ver todos →</Link>
                                 </div>
-                                
+
                                 {alunosRecentes.length === 0 ? (
                                     <div className="empty-state">
                                         <p>Ainda não tens alunos registados.</p>
@@ -215,7 +215,7 @@ export default function Dashboard() {
                                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                                     ))}
                                                 </Pie>
-                                                <Tooltip 
+                                                <Tooltip
                                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                                     itemStyle={{ fontWeight: 600 }}
                                                 />

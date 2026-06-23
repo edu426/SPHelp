@@ -35,6 +35,7 @@ Editar Alunos
     > Adicionar tabela "Terapias" - feito
     > Mudar nome de "Notas" para "Diagnostico" - feito
     >Estrategias de ensino orientadas ao perfil do aluno (professor preenche mais uma caixa de texto basica)
+    > react-hot-toast(para mostrar notificações melhores) -feito
 
 Layouts
     > Melhorar Layouts e Design geral - mais ou menos
