@@ -132,8 +132,16 @@ footer {
     }
 
     .logo {
-        font-size: 24px;
-        gap: 5px;
+        gap: 15px;
+    }
+
+    .logo-img {
+        height: 45px;
+    }
+
+    .logo-text {
+        font-size: 26px;
+        white-space: nowrap;
     }
 
     .nav-links {

@@ -68,7 +68,7 @@
     margin-left: 8px;
 }
 
-/* ── Floating Images ── */
+/* ── Images ── */
 .hero-image {
     flex: 1;
     display: flex;
@@ -76,35 +76,21 @@
     position: relative;
 }
 
-.floating-img {
+.clean-img {
     max-width: 100%;
     height: auto;
-    border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: floating 6s ease-in-out infinite;
+    object-fit: contain;
 }
 
 .laptop-img {
     z-index: 2;
+    transform: scale(1.25) translateX(30px);
+    transform-origin: center right;
 }
 
 .phone-img {
     display: none;
     /* hidden on desktop */
-}
-
-@keyframes floating {
-    0% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-15px);
-    }
-
-    100% {
-        transform: translateY(0px);
-    }
 }
 
 /* ── Section Headers ── */
@@ -345,9 +331,10 @@
 
     .phone-img {
         display: block;
-        max-width: 320px;
-        width: 90%;
+        max-width: 500px;
+        width: 100%;
         margin: 0 auto;
+        transform: translateX(20px);
     }
 
     .timeline-grid {

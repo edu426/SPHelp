@@ -17,7 +17,7 @@ function Home() {
                 <div className="hero-content">
                     <h1 className="hero-title">A sua plataforma de<br />Gestão Educativa</h1>
                     <p className="hero-subtitle">
-                        Simplifique o dia a dia da educação especial. Faça a gestão dos seus alunos, diagnósticos e relatórios num único local, de forma simples e intuitiva.
+                        Simplifique o dia a dia da educação especial. Faça a gestão dos seus alunos e diagnósticos num único local, de forma simples e intuitiva.
                     </p>
                     {isSignedIn ? (
                         <Link to="/dashboard" className="btn-primary glass-btn">
@@ -32,8 +32,8 @@ function Home() {
                     )}
                 </div>
                 <div className="hero-image">
-                    <img id="laptop" className="floating-img laptop-img" src="src/assets/images/laptop_early.png" alt="Inclui + Dashboard Preview" />
-                    <img id="phone" className="floating-img phone-img" src="src/assets/images/phone.png" alt="Inclui + Dashboard Preview mobile" />
+                    <img id="laptop" className="clean-img laptop-img" src="src/assets/images/IncluiPC.png" alt="Inclui + Dashboard Preview" />
+                    <img id="phone" className="clean-img phone-img" src="src/assets/images/IncluiMobil.png" alt="Inclui + Dashboard Preview mobile" />
                 </div>
             </section>
 
