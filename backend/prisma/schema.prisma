@@ -29,6 +29,7 @@ model Alunos {
   MSAI         MSAI[]
   Terapias     Terapias[]
   Encaregado   Encaregado[]
+  Adaptacoes   Adaptacoes[]
 }
 
 model Encaregado {
@@ -54,6 +55,15 @@ model MSAI {
   alunoId String
   msai    String @default("000000000000000") @db.Bit(15)
   aluno   Alunos @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+}
+
+model Adaptacoes {
+  id           String @id @default(cuid())
+  alunoId      String
+  adaptacao    String @default("00000000000") @db.Bit(11)
+  outros       String @default("N/A") /// @encrypted
+  observacoes  String @default("N/A") /// @encrypted
+  aluno        Alunos @relation(fields: [alunoId], references: [id], onDelete: Cascade)
 }
 
 model Presenca {

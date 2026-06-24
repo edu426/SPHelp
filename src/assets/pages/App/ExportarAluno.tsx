@@ -15,6 +15,7 @@ interface Student {
     professorId: string;
     diretorTurma: string;
     foto?: string;
+    Encaregado?: any[];
 }
 
 interface Atividade {
@@ -89,6 +90,7 @@ export default function ExportarAluno() {
     const [presencas, setPresencas] = useState<Presenca[]>([]);
     const [msai, setMsai] = useState<string>('000000000000000');
     const [terapias, setTerapias] = useState<TerapiasData | null>(null);
+    const [adaptacoes, setAdaptacoes] = useState<{ adaptacao: string; outros: string; observacoes: string } | null>(null);
     // UI state
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -97,8 +99,10 @@ export default function ExportarAluno() {
     // Which sections to export
     const [exportSections, setExportSections] = useState({
         dadosPessoais: true,
+        encarregado: true,
         presencas: true,
         msai: true,
+        adaptacoes: true,
         terapias: true,
     });
 
@@ -149,6 +153,13 @@ export default function ExportarAluno() {
                     if (msaiData?.msai) setMsai(msaiData.msai);
                 }
 
+                // Adaptacoes
+                const adaptacoesRes = await fetch(`/api/adaptacoes/${id}`);
+                if (adaptacoesRes.ok) {
+                    const adaptacoesData = await adaptacoesRes.json();
+                    setAdaptacoes(adaptacoesData);
+                }
+
                 // Terapias
                 const terapiasRes = await fetch(`/api/terapias/${id}`);
                 if (terapiasRes.ok) {
@@ -174,7 +185,7 @@ export default function ExportarAluno() {
 
     const handleExport = () => {
         if (!aluno) return;
-        if (!exportSections.dadosPessoais && !exportSections.presencas && !exportSections.msai && !exportSections.terapias) {
+        if (!exportSections.dadosPessoais && !exportSections.encarregado && !exportSections.presencas && !exportSections.msai && !exportSections.adaptacoes && !exportSections.terapias) {
             setMessage('Selecione pelo menos uma secção para exportar.');
             setTimeout(() => setMessage(''), 3000);
             return;
@@ -192,13 +203,31 @@ export default function ExportarAluno() {
                     { Campo: 'Diagnóstico / Notas', Valor: aluno.notas || '' },
                 ];
                 const wsDados = XLSX.utils.json_to_sheet(dadosRows);
+                wsDados['!cols'] = [{ wch: 20 }, { wch: 40 }];
                 XLSX.utils.book_append_sheet(wb, wsDados, 'Dados Pessoais');
+            }
+
+            // ── Sheet 1.5: Encarregado ──
+            if (exportSections.encarregado) {
+                const enc = aluno.Encaregado && aluno.Encaregado.length > 0 ? aluno.Encaregado[0] : null;
+                const encRows = enc ? [
+                    { Campo: 'Nome', Valor: enc.nome || 'N/A' },
+                    { Campo: 'Parentesco', Valor: enc.tipo || 'N/A' },
+                    { Campo: 'Email', Valor: enc.email || 'N/A' },
+                    { Campo: 'Telefone', Valor: enc.telefone || 'N/A' },
+                ] : [
+                    { Campo: 'Aviso', Valor: 'Sem encarregado de educação registado.' }
+                ];
+                const wsEnc = XLSX.utils.json_to_sheet(encRows);
+                wsEnc['!cols'] = [{ wch: 20 }, { wch: 40 }];
+                XLSX.utils.book_append_sheet(wb, wsEnc, 'Encarregado');
             }
 
             // ── Sheet 2: Aulas e Apoio ──
             if (exportSections.presencas) {
                 if (presencas.length === 0) {
                     const wsEmpty = XLSX.utils.json_to_sheet([{ Info: 'Sem registos de aulas ou apoio.' }]);
+                    wsEmpty['!cols'] = [{ wch: 40 }];
                     XLSX.utils.book_append_sheet(wb, wsEmpty, 'Aulas e Apoio');
                 } else {
                     const presRows = presencas.map(p => ({
@@ -212,6 +241,7 @@ export default function ExportarAluno() {
                             : '—',
                     }));
                     const wsPresencas = XLSX.utils.json_to_sheet(presRows);
+                    wsPresencas['!cols'] = [{ wch: 15 }, { wch: 25 }, { wch: 40 }, { wch: 15 }];
                     XLSX.utils.book_append_sheet(wb, wsPresencas, 'Aulas e Apoio');
                 }
             }
@@ -229,7 +259,45 @@ export default function ExportarAluno() {
                     });
                 });
                 const wsMsai = XLSX.utils.json_to_sheet(msaiRows);
+                wsMsai['!cols'] = [{ wch: 25 }, { wch: 60 }, { wch: 15 }];
                 XLSX.utils.book_append_sheet(wb, wsMsai, 'MSAI');
+            }
+
+            // ── Sheet 3.5: Adaptacoes ──
+            if (exportSections.adaptacoes && adaptacoes) {
+                const ADAPTACOES_LABELS = [
+                    "A diversificação dos instrumentos de recolha de informação",
+                    "Os enunciados em formatos acessíveis",
+                    "A interpretação em LGP",
+                    "A utilização de produtos de apoio",
+                    "O tempo suplementar para realização da prova",
+                    "A transcrição das respostas",
+                    "A leitura de enunciados",
+                    "A utilização de sala separada",
+                    "As pausas vigiadas",
+                    "O código de identificação de cores nos enunciados"
+                ];
+                const adaptRows: { Adaptação: string; Ativa: string }[] = [];
+                const safeAdaptacaoString = adaptacoes.adaptacao || "00000000000";
+                
+                ADAPTACOES_LABELS.forEach((label, i) => {
+                    adaptRows.push({
+                        Adaptação: label,
+                        Ativa: safeAdaptacaoString[i] === '1' ? 'Sim' : 'Não',
+                    });
+                });
+                adaptRows.push({
+                    Adaptação: 'Outros',
+                    Ativa: safeAdaptacaoString[10] === '1' ? `Sim (${adaptacoes.outros || ''})` : 'Não',
+                });
+                adaptRows.push({
+                    Adaptação: 'Observações',
+                    Ativa: adaptacoes.observacoes || 'N/A',
+                });
+                
+                const wsAdapt = XLSX.utils.json_to_sheet(adaptRows);
+                wsAdapt['!cols'] = [{ wch: 65 }, { wch: 20 }];
+                XLSX.utils.book_append_sheet(wb, wsAdapt, 'Adaptacoes');
             }
 
             // ── Sheet 4: Terapias ──
@@ -243,6 +311,7 @@ export default function ExportarAluno() {
                     { Terapia: 'Notas', Ativa: terapias.notasTerapia || '' },
                 ];
                 const wsTerapias = XLSX.utils.json_to_sheet(terapiasRows);
+                wsTerapias['!cols'] = [{ wch: 25 }, { wch: 20 }];
                 XLSX.utils.book_append_sheet(wb, wsTerapias, 'Terapias');
             }
 
@@ -306,6 +375,20 @@ export default function ExportarAluno() {
                             </div>
                         </label>
 
+                        {/* Encarregado */}
+                        <label style={sectionLabelStyle(exportSections.encarregado)}>
+                            <input
+                                type="checkbox"
+                                checked={exportSections.encarregado}
+                                onChange={() => toggleSection('encarregado')}
+                                style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+                            />
+                            <div>
+                                <strong>Encarregado de Educação</strong>
+                                <p style={sectionDescStyle}>Contactos e detalhes do encarregado.</p>
+                            </div>
+                        </label>
+
                         {/* Aulas / Apoio */}
                         <label style={sectionLabelStyle(exportSections.presencas)}>
                             <input
@@ -339,6 +422,20 @@ export default function ExportarAluno() {
                                         ? 'Nenhuma medida ativa.'
                                         : `${msaiAtivas} medida(s) ativa(s).`}
                                 </p>
+                            </div>
+                        </label>
+
+                        {/* Adaptacoes */}
+                        <label style={sectionLabelStyle(exportSections.adaptacoes)} className="fade-in">
+                            <input
+                                type="checkbox"
+                                checked={exportSections.adaptacoes}
+                                onChange={() => toggleSection('adaptacoes')}
+                                style={{ marginRight: '0.75rem', width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
+                            />
+                            <div>
+                                <strong>Adaptações ao Processo de Avaliação</strong>
+                                <p style={sectionDescStyle}>Medidas específicas e as tuas observações.</p>
                             </div>
                         </label>
 
@@ -383,6 +480,35 @@ export default function ExportarAluno() {
                                         <tr className="row-odd"><td>Turma</td><td>{aluno.turma}</td></tr>
                                         <tr className="row-even"><td>Diretor de Turma</td><td>{aluno.diretorTurma || 'N/A'}</td></tr>
                                         <tr className="row-odd"><td>Diagnóstico / Notas</td><td>{aluno.notas || '—'}</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Encarregado preview */}
+                    {exportSections.encarregado && (
+                        <>
+                            <h2 className="subtitle">Pré-visualização — Encarregado de Educação</h2>
+                            <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
+                                <table className="student-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Campo</th>
+                                            <th>Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {aluno.Encaregado && aluno.Encaregado.length > 0 ? (
+                                            <>
+                                                <tr className="row-even"><td>Nome</td><td>{aluno.Encaregado[0].nome || 'N/A'}</td></tr>
+                                                <tr className="row-odd"><td>Parentesco</td><td>{aluno.Encaregado[0].tipo || 'N/A'}</td></tr>
+                                                <tr className="row-even"><td>Email</td><td>{aluno.Encaregado[0].email || 'N/A'}</td></tr>
+                                                <tr className="row-odd"><td>Telefone</td><td>{aluno.Encaregado[0].telefone || 'N/A'}</td></tr>
+                                            </>
+                                        ) : (
+                                            <tr className="row-even"><td colSpan={2} style={{ textAlign: 'center' }}>Sem encarregado de educação registado.</td></tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -448,6 +574,58 @@ export default function ExportarAluno() {
                                                 </tr>
                                             ))
                                         )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Adaptacoes preview */}
+                    {exportSections.adaptacoes && adaptacoes && (
+                        <>
+                            <h2 className="subtitle">Pré-visualização — Adaptações ao Processo de Avaliação</h2>
+                            <div className="table-wrapper" style={{ marginBottom: '2rem' }}>
+                                <table className="student-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Adaptação</th>
+                                            <th>Ativa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(() => {
+                                            const ADAPTACOES_LABELS = [
+                                                "A diversificação dos instrumentos de recolha de informação",
+                                                "Os enunciados em formatos acessíveis",
+                                                "A interpretação em LGP",
+                                                "A utilização de produtos de apoio",
+                                                "O tempo suplementar para realização da prova",
+                                                "A transcrição das respostas",
+                                                "A leitura de enunciados",
+                                                "A utilização de sala separada",
+                                                "As pausas vigiadas",
+                                                "O código de identificação de cores nos enunciados"
+                                            ];
+                                            const safeStr = adaptacoes.adaptacao || "00000000000";
+                                            return (
+                                                <>
+                                                    {ADAPTACOES_LABELS.map((label, i) => (
+                                                        <tr key={i} className={i % 2 === 0 ? 'row-even' : 'row-odd'}>
+                                                            <td>{label}</td>
+                                                            <td>{safeStr[i] === '1' ? 'Sim' : 'Não'}</td>
+                                                        </tr>
+                                                    ))}
+                                                    <tr className="row-even">
+                                                        <td>Outros</td>
+                                                        <td>{safeStr[10] === '1' ? `Sim (${adaptacoes.outros || ''})` : 'Não'}</td>
+                                                    </tr>
+                                                    <tr className="row-odd">
+                                                        <td>Observações</td>
+                                                        <td>{adaptacoes.observacoes || 'N/A'}</td>
+                                                    </tr>
+                                                </>
+                                            );
+                                        })()}
                                     </tbody>
                                 </table>
                             </div>

@@ -639,6 +639,44 @@ app.delete("/api/alunos/:id", async (req, res) => {
   }
 });
 
+// GET Adaptacoes de um aluno
+app.get("/api/adaptacoes/:alunoId", async (req, res) => {
+  const { alunoId } = req.params;
+  try {
+    const adaptacoes = await prisma.Adaptacoes.findFirst({ where: { alunoId } });
+    if (!adaptacoes) {
+      return res.json({ adaptacao: "00000000000", outros: "", observacoes: "" });
+    }
+    res.json(adaptacoes);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar adaptacoes." });
+  }
+});
+
+// PUT (upsert) Adaptacoes de um aluno
+app.put("/api/adaptacoes/:alunoId", async (req, res) => {
+  const { alunoId } = req.params;
+  const { adaptacao, outros, observacoes } = req.body;
+  try {
+    const existing = await prisma.Adaptacoes.findFirst({ where: { alunoId } });
+    let updated;
+    if (existing) {
+      updated = await prisma.Adaptacoes.update({
+        where: { id: existing.id },
+        data: { adaptacao, outros, observacoes }
+      });
+    } else {
+      updated = await prisma.Adaptacoes.create({
+        data: { alunoId, adaptacao, outros, observacoes }
+      });
+    }
+    res.json(updated);
+  } catch (error) {
+    console.error("Erro ao guardar adaptacoes:", error);
+    res.status(500).json({ error: "Erro ao guardar adaptacoes." });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor a correr na porta ${PORT} e exposto à rede local (0.0.0.0)`);

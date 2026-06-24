@@ -35,8 +35,6 @@ function MainHeader() {
             <footer>
                 <div className="footer-links">
                     <Link to="/ajuda">Ajuda e Suporte</Link>
-                    <a href="#">Política de Privacidade</a>
-                    <a href="#">Contacto</a>
                 </div>
                 <div className="footer-info">
                     <p>Desenvolvido para apoiar os profissionais de Educação Especial.</p>

@@ -98,6 +98,14 @@ export default function EditarAluno() {
     const [terapias, setTerapias] = useState<TerapiasData>(DEFAULT_TERAPIAS);
     const [originalTerapias, setOriginalTerapias] = useState<TerapiasData>(DEFAULT_TERAPIAS);
 
+    // Adaptacoes State
+    const [adaptacoes, setAdaptacoes] = useState("00000000000");
+    const [originalAdaptacoes, setOriginalAdaptacoes] = useState("00000000000");
+    const [adaptacoesOutros, setAdaptacoesOutros] = useState("");
+    const [originalAdaptacoesOutros, setOriginalAdaptacoesOutros] = useState("");
+    const [adaptacoesObservacoes, setAdaptacoesObservacoes] = useState("");
+    const [originalAdaptacoesObservacoes, setOriginalAdaptacoesObservacoes] = useState("");
+
     // Espera q o PUT acabe
     const [saving, setSaving] = useState(false);
 
@@ -118,7 +126,6 @@ export default function EditarAluno() {
         resumoAtividade: '',
         concluida: false,
     });
-    const [newAula, setNewAula] = useState({ date: new Date().toISOString().split('T')[0], sumario: '', justificado: false, justificacao: '' });
     const [addingAula, setAddingAula] = useState(false);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -152,6 +159,27 @@ export default function EditarAluno() {
     const [addingAtividadeForId, setAddingAtividadeForId] = useState<string | null>(null);
     const [newAtividade, setNewAtividade] = useState({ resumo: '', concluida: false });
     const [savingNewAtividade, setSavingNewAtividade] = useState(false);
+
+    // Adaptacoes Logic
+    const canEditAdaptacoes = msai.substring(5).includes('1');
+
+    useEffect(() => {
+        if (!canEditAdaptacoes && isEditing) {
+            setAdaptacoes("00000000000");
+            setAdaptacoesOutros("");
+            setAdaptacoesObservacoes("");
+        }
+    }, [canEditAdaptacoes, isEditing]);
+
+    const handleAdaptacoesChange = (index: number) => {
+        if (!isEditing || !canEditAdaptacoes) return;
+        const newAdaptacoes = adaptacoes.split('');
+        newAdaptacoes[index] = newAdaptacoes[index] === '1' ? '0' : '1';
+        setAdaptacoes(newAdaptacoes.join(''));
+        if (index === 10 && newAdaptacoes[index] === '0') {
+            setAdaptacoesOutros("");
+        }
+    };
 
     useEffect(() => {
         if (user) {
@@ -203,6 +231,18 @@ export default function EditarAluno() {
                     const terapiasData = await terapiasResponse.json();
                     setTerapias(terapiasData);
                     setOriginalTerapias(terapiasData);
+                }
+
+                // Fetch Adaptacoes
+                const adaptacoesResponse = await fetch(`/api/adaptacoes/${id}`);
+                if (adaptacoesResponse.ok) {
+                    const adaptacoesData = await adaptacoesResponse.json();
+                    setAdaptacoes(adaptacoesData.adaptacao || "00000000000");
+                    setOriginalAdaptacoes(adaptacoesData.adaptacao || "00000000000");
+                    setAdaptacoesOutros(adaptacoesData.outros === "N/A" ? "" : (adaptacoesData.outros || ""));
+                    setOriginalAdaptacoesOutros(adaptacoesData.outros === "N/A" ? "" : (adaptacoesData.outros || ""));
+                    setAdaptacoesObservacoes(adaptacoesData.observacoes === "N/A" ? "" : (adaptacoesData.observacoes || ""));
+                    setOriginalAdaptacoesObservacoes(adaptacoesData.observacoes === "N/A" ? "" : (adaptacoesData.observacoes || ""));
                 }
             } catch (err: any) {
                 setError(err.message || 'Erro ao carregar dados do aluno.');
@@ -295,12 +335,23 @@ export default function EditarAluno() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(terapias),
             });
-            if (!terapiasResponse.ok) throw new Error('Erro ao guardar terapias.');
+            if (!terapiasResponse.ok) throw new Error('Erro ao atualizar terapias.');
+
+            // Update Adaptacoes
+            const adaptResponse = await fetch(`/api/adaptacoes/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ adaptacao: adaptacoes, outros: adaptacoesOutros || "N/A", observacoes: adaptacoesObservacoes || "N/A" })
+            });
+            if (!adaptResponse.ok) throw new Error('Erro ao atualizar adaptações.');
 
             const updated = await response.json();
             setAluno(updated);
             setOriginalMsai(msai);
             setOriginalTerapias(terapias);
+            setOriginalAdaptacoes(adaptacoes);
+            setOriginalAdaptacoesOutros(adaptacoesOutros);
+            setOriginalAdaptacoesObservacoes(adaptacoesObservacoes);
 
             setIsEditing(false);
             toast.success('Alterações guardadas com sucesso!');
@@ -321,6 +372,9 @@ export default function EditarAluno() {
         }
         setMsai(originalMsai);
         setTerapias(originalTerapias);
+        setAdaptacoes(originalAdaptacoes);
+        setAdaptacoesOutros(originalAdaptacoesOutros);
+        setAdaptacoesObservacoes(originalAdaptacoesObservacoes);
         setIsEditing(false);
     };
 
@@ -762,6 +816,67 @@ export default function EditarAluno() {
                                         ? <input className="edit-input" type="tel" name="telefone" value={form.encarregado.telefone} onChange={handleEncarregadoChange} placeholder="Ex: 912345678" />
                                         : <span className="info-value">{aluno.Encaregado && aluno.Encaregado.length > 0 ? aluno.Encaregado[0].telefone : 'N/A'}</span>
                                     }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Secção Adaptações ao processo de avaliação ── */}
+                    <div className="aulas-full-width-container">
+                        <div className="aulas-section" style={{ marginTop: '0', marginBottom: '2rem', opacity: canEditAdaptacoes ? 1 : 0.6 }}>
+                            <div className="faltas-header">
+                                <h2>Adaptações ao processo de avaliação</h2>
+                            </div>
+                            {!canEditAdaptacoes && (
+                                <p style={{ color: '#854d0e', marginBottom: '1.5rem', backgroundColor: '#fef9c3', padding: '1rem', borderRadius: '8px', fontSize: '0.95rem' }}>
+                                    <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '5px', fontSize: '1.2rem' }}>info</span>
+                                    <strong>Nota:</strong> Esta secção encontra-se bloqueada porque o aluno não tem nenhuma <strong>Medida Seletiva</strong> ou <strong>Medida Adicional</strong> assinalada no quadro MSAI. Para a desbloquear, ativa pelo menos uma destas medidas no modo de edição.
+                                </p>
+                            )}
+                            <div className="encarregado-grid" style={{ pointerEvents: canEditAdaptacoes ? 'auto' : 'none' }}>
+                                <div className="msai-column" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[0] === '1'} onChange={() => handleAdaptacoesChange(0)} disabled={!isEditing || !canEditAdaptacoes} /> a) A diversificação dos instrumentos de recolha de informação</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[1] === '1'} onChange={() => handleAdaptacoesChange(1)} disabled={!isEditing || !canEditAdaptacoes} /> b) Os enunciados em formatos acessíveis</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[2] === '1'} onChange={() => handleAdaptacoesChange(2)} disabled={!isEditing || !canEditAdaptacoes} /> c) A interpretação em LGP</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[3] === '1'} onChange={() => handleAdaptacoesChange(3)} disabled={!isEditing || !canEditAdaptacoes} /> d) A utilização de produtos de apoio</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[4] === '1'} onChange={() => handleAdaptacoesChange(4)} disabled={!isEditing || !canEditAdaptacoes} /> e) O tempo suplementar para realização da prova</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[5] === '1'} onChange={() => handleAdaptacoesChange(5)} disabled={!isEditing || !canEditAdaptacoes} /> f) A transcrição das respostas</label>
+                                </div>
+                                <div className="msai-column" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[6] === '1'} onChange={() => handleAdaptacoesChange(6)} disabled={!isEditing || !canEditAdaptacoes} /> g) A leitura de enunciados</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[7] === '1'} onChange={() => handleAdaptacoesChange(7)} disabled={!isEditing || !canEditAdaptacoes} /> h) A utilização de sala separada</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[8] === '1'} onChange={() => handleAdaptacoesChange(8)} disabled={!isEditing || !canEditAdaptacoes} /> i) As pausas vigiadas</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[9] === '1'} onChange={() => handleAdaptacoesChange(9)} disabled={!isEditing || !canEditAdaptacoes} /> j) O código de identificação de cores nos enunciados</label>
+                                    <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[10] === '1'} onChange={() => handleAdaptacoesChange(10)} disabled={!isEditing || !canEditAdaptacoes} /> Outros</label>
+                                    {adaptacoes[10] === '1' && (
+                                        <input 
+                                            type="text" 
+                                            className="edit-input" 
+                                            placeholder="Descreve as outras adaptações..." 
+                                            value={adaptacoesOutros} 
+                                            onChange={(e) => setAdaptacoesOutros(e.target.value)} 
+                                            disabled={!isEditing || !canEditAdaptacoes}
+                                            style={{ marginTop: '0.5rem', width: '100%' }}
+                                        />
+                                    )}
+                                </div>
+                                
+                                <div className="adaptacoes-observacoes" style={{ gridColumn: '1 / -1', marginTop: '1rem', pointerEvents: canEditAdaptacoes ? 'auto' : 'none' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#475569' }}>Observações</label>
+                                    {isEditing ? (
+                                        <textarea
+                                            className="edit-input"
+                                            placeholder="Ex: Notas adicionais sobre as adaptações..."
+                                            value={adaptacoesObservacoes}
+                                            onChange={(e) => setAdaptacoesObservacoes(e.target.value)}
+                                            disabled={!canEditAdaptacoes}
+                                            style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
+                                        />
+                                    ) : (
+                                        <div className="info-value" style={{ minHeight: '80px', padding: '0.75rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', whiteSpace: 'pre-wrap' }}>
+                                            {adaptacoesObservacoes || "Sem observações adicionais."}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
