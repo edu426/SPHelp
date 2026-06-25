@@ -32,8 +32,8 @@ function Home() {
                     )}
                 </div>
                 <div className="hero-image">
-                    <img id="laptop" className="clean-img laptop-img" src="src/assets/images/IncluiPC.png" alt="Inclui + Dashboard Preview" />
-                    <img id="phone" className="clean-img phone-img" src="src/assets/images/IncluiMobil.png" alt="Inclui + Dashboard Preview mobile" />
+                    <img id="laptop" className="clean-img laptop-img" src="/images/IncluiPC.png" alt="Inclui + Dashboard Preview" />
+                    <img id="phone" className="clean-img phone-img" src="/images/IncluiMobil.png" alt="Inclui + Dashboard Preview mobile" />
                 </div>
             </section>
 
