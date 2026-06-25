@@ -1,9 +1,4 @@
 {
-  "experimentalServices": {
-    "frontend": {
-      "routePrefix": "/"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
