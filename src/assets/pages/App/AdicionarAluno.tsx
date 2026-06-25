@@ -115,158 +115,158 @@ export default function AdicionarAluno() {
                         <div className="add-student-card student-info-card">
                             <h2 style={{ marginBottom: '1.5rem', color: '#1a1a1a', fontSize: '1.3rem' }}>Dados do Aluno</h2>
                             <div className="form-group">
-                            <label htmlFor="nome">Nome</label>
-                            <input
-                                id="nome"
-                                name="nome"
-                                type="text"
-                                placeholder="Ex: João Silva"
-                                value={form.nome}
-                                onChange={handleChange}
-                                required
-                            />
+                                <label htmlFor="nome">Nome</label>
+                                <input
+                                    id="nome"
+                                    name="nome"
+                                    type="text"
+                                    placeholder="Ex: João Silva"
+                                    value={form.nome}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="turma">Turma</label>
+                                <input
+                                    id="turma"
+                                    name="turma"
+                                    type="text"
+                                    placeholder="Ex: 10A"
+                                    value={form.turma}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="dataNasc">Data de Nascimento</label>
+                                <input
+                                    id="dataNasc"
+                                    name="dataNasc"
+                                    type="date"
+                                    value={form.dataNasc}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="diretorTurma">Diretor de Turma</label>
+                                <input
+                                    id="diretorTurma"
+                                    name="diretorTurma"
+                                    type="text"
+                                    placeholder="Ex: Prof. Maria"
+                                    value={form.diretorTurma}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="notas">Diagnóstico (Opcional)</label>
+                                <textarea
+                                    id="notas"
+                                    name="notas"
+                                    placeholder="Ex: TDAH"
+                                    value={form.notas}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="estrategias">Estratégias de Intervenção (Opcional)</label>
+                                <textarea
+                                    id="estrategias"
+                                    name="estrategias"
+                                    placeholder="Ex: Sentar na fila da frente..."
+                                    value={form.estrategias}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="foto">Fotografia de Perfil (Opcional)</label>
+                                <input
+                                    id="foto"
+                                    name="foto"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                />
+                                {form.foto && (
+                                    <div style={{ marginTop: '10px' }}>
+                                        <img src={form.foto} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '50%' }} />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="turma">Turma</label>
-                            <input
-                                id="turma"
-                                name="turma"
-                                type="text"
-                                placeholder="Ex: 10A"
-                                value={form.turma}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                        {/* ── Direita: Encarregado de Educação ── */}
+                        <div className="add-student-card encarregado-card">
+                            <h2 style={{ marginBottom: '1.5rem', color: '#1a1a1a', fontSize: '1.3rem' }}>Encarregado de Educação</h2>
 
-                        <div className="form-group">
-                            <label htmlFor="dataNasc">Data de Nascimento</label>
-                            <input
-                                id="dataNasc"
-                                name="dataNasc"
-                                type="date"
-                                value={form.dataNasc}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                            <div className="form-group">
+                                <label htmlFor="encarregadoNome">Nome do Encarregado</label>
+                                <input
+                                    id="encarregadoNome"
+                                    name="nome"
+                                    type="text"
+                                    placeholder="Ex: Maria Santos"
+                                    value={form.encarregado.nome}
+                                    onChange={handleEncarregadoChange}
+                                    required
+                                />
+                            </div>
 
-                        <div className="form-group">
-                            <label htmlFor="diretorTurma">Diretor de Turma</label>
-                            <input
-                                id="diretorTurma"
-                                name="diretorTurma"
-                                type="text"
-                                placeholder="Ex: Prof. Maria"
-                                value={form.diretorTurma}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                            <div className="form-group">
+                                <label htmlFor="encarregadoTipo">Parentesco</label>
+                                <input
+                                    id="encarregadoTipo"
+                                    name="tipo"
+                                    type="text"
+                                    placeholder="Ex: Mãe, Pai, Tutor"
+                                    value={form.encarregado.tipo}
+                                    onChange={handleEncarregadoChange}
+                                    required
+                                />
+                            </div>
 
-                        <div className="form-group">
-                            <label htmlFor="notas">Diagnóstico (Opcional)</label>
-                            <textarea
-                                id="notas"
-                                name="notas"
-                                placeholder="Ex: TDAH"
-                                value={form.notas}
-                                onChange={handleChange}
-                            />
-                        </div>
+                            <div className="form-group">
+                                <label htmlFor="encarregadoEmail">E-mail</label>
+                                <input
+                                    id="encarregadoEmail"
+                                    name="email"
+                                    type="email"
+                                    placeholder="Ex: maria.santos@email.com"
+                                    value={form.encarregado.email}
+                                    onChange={handleEncarregadoChange}
+                                    required
+                                />
+                            </div>
 
-                        <div className="form-group">
-                            <label htmlFor="estrategias">Estratégias de Intervenção (Opcional)</label>
-                            <textarea
-                                id="estrategias"
-                                name="estrategias"
-                                placeholder="Ex: Sentar na fila da frente..."
-                                value={form.estrategias}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="foto">Fotografia de Perfil (Opcional)</label>
-                            <input
-                                id="foto"
-                                name="foto"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                            />
-                            {form.foto && (
-                                <div style={{ marginTop: '10px' }}>
-                                    <img src={form.foto} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '50%' }} />
-                                </div>
-                            )}
+                            <div className="form-group">
+                                <label htmlFor="encarregadoTelefone">Contacto Telefónico</label>
+                                <input
+                                    id="encarregadoTelefone"
+                                    name="telefone"
+                                    type="tel"
+                                    placeholder="Ex: 912345678"
+                                    value={form.encarregado.telefone}
+                                    onChange={handleEncarregadoChange}
+                                    required
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    {/* ── Direita: Encarregado de Educação ── */}
-                    <div className="add-student-card encarregado-card">
-                        <h2 style={{ marginBottom: '1.5rem', color: '#1a1a1a', fontSize: '1.3rem' }}>Encarregado de Educação</h2>
-
-                        <div className="form-group">
-                            <label htmlFor="encarregadoNome">Nome do Encarregado</label>
-                            <input
-                                id="encarregadoNome"
-                                name="nome"
-                                type="text"
-                                placeholder="Ex: Maria Santos"
-                                value={form.encarregado.nome}
-                                onChange={handleEncarregadoChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="encarregadoTipo">Parentesco</label>
-                            <input
-                                id="encarregadoTipo"
-                                name="tipo"
-                                type="text"
-                                placeholder="Ex: Mãe, Pai, Tutor"
-                                value={form.encarregado.tipo}
-                                onChange={handleEncarregadoChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="encarregadoEmail">E-mail</label>
-                            <input
-                                id="encarregadoEmail"
-                                name="email"
-                                type="email"
-                                placeholder="Ex: maria.santos@email.com"
-                                value={form.encarregado.email}
-                                onChange={handleEncarregadoChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="encarregadoTelefone">Telefone</label>
-                            <input
-                                id="encarregadoTelefone"
-                                name="telefone"
-                                type="tel"
-                                placeholder="Ex: 912345678"
-                                value={form.encarregado.telefone}
-                                onChange={handleEncarregadoChange}
-                                required
-                            />
-                        </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem' }}>
+                        <button type="submit" className="btn-submit btn-large" disabled={loading}>
+                            {loading ? 'A guardar...' : 'Adicionar Aluno'}
+                        </button>
                     </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem' }}>
-                    <button type="submit" className="btn-submit btn-large" disabled={loading}>
-                        {loading ? 'A guardar...' : 'Adicionar Aluno'}
-                    </button>
-                </div>
                 </form>
 
                 <div className="feedback-messages" style={{ marginTop: '1rem' }}>

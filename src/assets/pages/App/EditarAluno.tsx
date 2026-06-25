@@ -661,7 +661,7 @@ export default function EditarAluno() {
                                 <div className="info-row" style={{ marginTop: '0.5rem' }}>
                                     <span className="info-label">
                                         Estratégias de Intervenção
-                                        <span 
+                                        <span
                                             data-tooltip="Estratégias a aplicar com este aluno"
                                             className="material-symbols-outlined"
                                             style={{ fontSize: '0.95rem', color: '#bbb', verticalAlign: 'middle', marginLeft: '5px', cursor: 'help' }}
@@ -811,7 +811,7 @@ export default function EditarAluno() {
                                 </div>
 
                                 <div className="info-row">
-                                    <span className="info-label">Telefone</span>
+                                    <span className="info-label">Contacto Telefónico</span>
                                     {isEditing
                                         ? <input className="edit-input" type="tel" name="telefone" value={form.encarregado.telefone} onChange={handleEncarregadoChange} placeholder="Ex: 912345678" />
                                         : <span className="info-value">{aluno.Encaregado && aluno.Encaregado.length > 0 ? aluno.Encaregado[0].telefone : 'N/A'}</span>
@@ -849,18 +849,18 @@ export default function EditarAluno() {
                                     <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[9] === '1'} onChange={() => handleAdaptacoesChange(9)} disabled={!isEditing || !canEditAdaptacoes} /> j) O código de identificação de cores nos enunciados</label>
                                     <label className="msai-checkbox"><input type="checkbox" checked={adaptacoes[10] === '1'} onChange={() => handleAdaptacoesChange(10)} disabled={!isEditing || !canEditAdaptacoes} /> Outros</label>
                                     {adaptacoes[10] === '1' && (
-                                        <input 
-                                            type="text" 
-                                            className="edit-input" 
-                                            placeholder="Descreve as outras adaptações..." 
-                                            value={adaptacoesOutros} 
-                                            onChange={(e) => setAdaptacoesOutros(e.target.value)} 
+                                        <input
+                                            type="text"
+                                            className="edit-input"
+                                            placeholder="Descreve as outras adaptações..."
+                                            value={adaptacoesOutros}
+                                            onChange={(e) => setAdaptacoesOutros(e.target.value)}
                                             disabled={!isEditing || !canEditAdaptacoes}
                                             style={{ marginTop: '0.5rem', width: '100%' }}
                                         />
                                     )}
                                 </div>
-                                
+
                                 <div className="adaptacoes-observacoes" style={{ gridColumn: '1 / -1', marginTop: '1rem', pointerEvents: canEditAdaptacoes ? 'auto' : 'none' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#475569' }}>Observações</label>
                                     {isEditing ? (

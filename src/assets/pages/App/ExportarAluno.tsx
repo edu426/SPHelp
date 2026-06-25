@@ -279,7 +279,7 @@ export default function ExportarAluno() {
                 ];
                 const adaptRows: { Adaptação: string; Ativa: string }[] = [];
                 const safeAdaptacaoString = adaptacoes.adaptacao || "00000000000";
-                
+
                 ADAPTACOES_LABELS.forEach((label, i) => {
                     adaptRows.push({
                         Adaptação: label,
@@ -294,7 +294,7 @@ export default function ExportarAluno() {
                     Adaptação: 'Observações',
                     Ativa: adaptacoes.observacoes || 'N/A',
                 });
-                
+
                 const wsAdapt = XLSX.utils.json_to_sheet(adaptRows);
                 wsAdapt['!cols'] = [{ wch: 65 }, { wch: 20 }];
                 XLSX.utils.book_append_sheet(wb, wsAdapt, 'Adaptacoes');
@@ -504,7 +504,7 @@ export default function ExportarAluno() {
                                                 <tr className="row-even"><td>Nome</td><td>{aluno.Encaregado[0].nome || 'N/A'}</td></tr>
                                                 <tr className="row-odd"><td>Parentesco</td><td>{aluno.Encaregado[0].tipo || 'N/A'}</td></tr>
                                                 <tr className="row-even"><td>Email</td><td>{aluno.Encaregado[0].email || 'N/A'}</td></tr>
-                                                <tr className="row-odd"><td>Telefone</td><td>{aluno.Encaregado[0].telefone || 'N/A'}</td></tr>
+                                                <tr className="row-odd"><td>Contacto Telefónico</td><td>{aluno.Encaregado[0].telefone || 'N/A'}</td></tr>
                                             </>
                                         ) : (
                                             <tr className="row-even"><td colSpan={2} style={{ textAlign: 'center' }}>Sem encarregado de educação registado.</td></tr>

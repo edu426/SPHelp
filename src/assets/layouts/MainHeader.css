@@ -6,8 +6,7 @@ header {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 20px rgba(248, 195, 1, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 1000;
 }
 
