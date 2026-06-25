@@ -154,9 +154,31 @@
 @media (max-width: 860px) {
     .add-student-layout {
         flex-direction: column;
+        gap: 1.5rem;
     }
-    .encarregado-card {
+    .encarregado-card, .student-info-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none;
+    }
+    .add-student-page {
+        padding: 1.5rem 1rem;
         width: 100%;
+        box-sizing: border-box;
+    }
+    .add-student-card {
+        padding: 1.5rem 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .btn-submit {
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+    .form-group input, .form-group textarea {
+        width: 100%;
+        box-sizing: border-box;
     }
 }
 

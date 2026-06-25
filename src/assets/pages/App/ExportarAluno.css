@@ -167,6 +167,29 @@
     transform: translateY(-1px);
 }
 
+/* ── Mobile Responsiveness ── */
+@media (max-width: 860px) {
+    .container {
+        padding: 1.5rem 5%;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        max-width: 90vw;
+        overflow-x: auto;
+    }
+}
+
 .no-results {
     text-align: center;
     padding: 2rem;
